@@ -1,3 +1,5 @@
+//req.user comes from protect and it has role
+
 const requireRole = (role) =>{
   return (req,res,next) =>{
     if(!req.user){
