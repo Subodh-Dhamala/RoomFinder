@@ -2,6 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
+import errorHandler from './middlewares/Errorhandler.js';
+import webhookRoutes from './routes/Webhooks.js';
 
 dotenv.config();
 connectDB();
@@ -14,7 +16,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get('/',(req,res)=>{
   res.send('Server is running!');
-})
+});
+
+app.use('/api/webhooks',webhookRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
