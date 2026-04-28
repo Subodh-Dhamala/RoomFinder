@@ -16,4 +16,9 @@ const roomSchema = new mongoose.Schema(
   {timestamps:true}
 );
 
+roomSchema.index({ isAvailable: 1 })
+roomSchema.index({ landlordId: 1 })
+roomSchema.index({ price: 1 })
+roomSchema.index({ location: 'text' })
+
 export default mongoose.model("Room",roomSchema);
