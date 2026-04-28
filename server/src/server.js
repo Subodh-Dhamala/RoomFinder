@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
-import errorHandler from './middlewares/Errorhandler.js';
+import errorHandler from './middlewares/errorHandler.js';
 import webhookRoutes from './routes/Webhooks.js';
 
 dotenv.config();
