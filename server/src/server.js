@@ -5,6 +5,8 @@ import connectDB from './config/db.js';
 import errorHandler from './middlewares/errorHandler.js';
 import webhookRoutes from './routes/Webhooks.js';
 
+import uploadRoutes from './routes/upload.js'
+
 dotenv.config();
 connectDB();
 
@@ -21,6 +23,8 @@ app.get('/',(req,res)=>{
 app.use('/api/webhooks',webhookRoutes);
 
 app.use(errorHandler);
+
+app.use('/api/upload', uploadRoutes)
 
 const PORT = process.env.PORT || 5000;
 
