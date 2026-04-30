@@ -3,9 +3,11 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
 import errorHandler from './middlewares/errorHandler.js';
-import webhookRoutes from './routes/Webhooks.js';
 
+import webhookRoutes from './routes/Webhooks.js';
 import uploadRoutes from './routes/upload.js'
+import wishlistRoutes from './routes/wishlistRoute.js';
+import listingRoutes from './routes/listingRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -21,10 +23,11 @@ app.get('/',(req,res)=>{
 });
 
 app.use('/api/webhooks',webhookRoutes);
+app.use('/api/upload', uploadRoutes)
+app.use('/api/wishlist',wishlistRoutes);
+app.use('/api/listings',listingRoutes);
 
 app.use(errorHandler);
-
-app.use('/api/upload', uploadRoutes)
 
 const PORT = process.env.PORT || 5000;
 
