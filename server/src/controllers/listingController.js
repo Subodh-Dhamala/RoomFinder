@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
-import {v2 as cloudinary} from 'cloudinary';
 import Room from '../models/Room.js';
-
+import cloudinary from '../config/cloudinary.js'
 
 //post - /api/listings
 export const createListing = async (req,res,next) =>{
@@ -115,7 +114,6 @@ export const updateListing = async(req,res,next)=>{
 
   if(req.body.images && req.body.images.length > 0){
     for(const image of room.images){
-      const publicId = getPublicId(imageUrl);
       await cloudinary.uploader.destroy(image.public_id);
     }
   }
@@ -141,7 +139,7 @@ export const updateListing = async(req,res,next)=>{
 }
 
 
-//delete - /api/listings:id
+//delete - /api/listings/:id
 export const deleteListing = async(req,res,next) =>{
   try{
     
