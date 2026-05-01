@@ -2,10 +2,6 @@ import mongoose from 'mongoose';
 import {v2 as cloudinary} from 'cloudinary';
 import Room from '../models/Room.js';
 
-//helper to extract public_id from cloudinary URL
-const getPublicId = (url) =>{
-    return url.split('/').slice(-2).join('/').split('.')[0];
-}
 
 //post - /api/listings
 export const createListing = async (req,res,next) =>{
@@ -110,7 +106,7 @@ export const updateListing = async(req,res,next)=>{
       return res.status(404).json({message:'Room not found'});
     }
 
-  
+
   if (room.landlordId.toString() !== req.user._id.toString()) {
     return res.status(403).json({ message: 'Not your listing' })
   }
@@ -118,9 +114,9 @@ export const updateListing = async(req,res,next)=>{
   //if new images are sent, delete old ones from cloudinary first
 
   if(req.body.images && req.body.images.length > 0){
-    for(const imageUrl of room.images){
+    for(const image of room.images){
       const publicId = getPublicId(imageUrl);
-      await cloudinary.uploader.destroy(publicId);
+      await cloudinary.uploader.destroy(image.public_id);
     }
   }
   
@@ -146,7 +142,6 @@ export const updateListing = async(req,res,next)=>{
 
 
 //delete - /api/listings:id
-
 export const deleteListing = async(req,res,next) =>{
   try{
     
@@ -167,9 +162,8 @@ export const deleteListing = async(req,res,next) =>{
     }
 
      // delete all images from cloudinary
-    for (const imageUrl of room.images) {
-      const publicId = getPublicId(imageUrl)
-      await cloudinary.uploader.destroy(publicId)
+    for (const image of room.images) {
+      await cloudinary.uploader.destroy(image.public_id);
     }
 
     await room.deleteOne();

@@ -9,7 +9,12 @@ const roomSchema = new mongoose.Schema(
     price: {type: Number, required: true},
     location: {type: String, required: true},
     type:{type:String, enum:['single','shared','apartment']},
-    images: [String],
+    images: [
+  {
+    url: { type: String },
+    public_id: { type: String },
+  }
+],
     isAvailable: {type: Boolean, default: true},
     landlordId: {type: String},
   },

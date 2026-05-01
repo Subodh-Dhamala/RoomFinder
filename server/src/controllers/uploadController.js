@@ -5,8 +5,12 @@ export const uploadImages = (req,res)=>{
     return res.status(400).json({message: 'No images uploaded'});
   }
 
-const urls = req.files.map(file.path);
+  const images = req.files.map((file) => ({
+    url: file.path,
+    public_id: file.filename,
+  })
+  )
 
-res.status(200).json({urls});
+res.status(200).json({images});
 
 }
