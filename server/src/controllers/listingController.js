@@ -35,15 +35,44 @@ export const createListing = async (req,res,next) =>{
 
 
 //get - /api/listings
-export const getAllListings = async(req,res,next)=>{
-  try{
-    const rooms = await Room.find({isAvailable:true});
-    res.json(rooms);
-  }
-  catch(error){
+export const getAllListings = async (req, res, next) => {
+  try {
+    const { location, minPrice, maxPrice, type, page, limit } = req.query;
+
+    const filter = { isAvailable: true };
+
+    if (location) {
+      filter.location = { $regex: location, $options: "i" };
+    }
+
+    if (type) filter.type = type;
+
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    const p = Math.max(1, parseInt(page) || 1);
+    const l = Math.min(50, parseInt(limit) || 10);
+
+    const rooms = await Room.find(filter)
+      .skip((p - 1) * l)
+      .limit(l);
+
+    const totalCount = await Room.countDocuments(filter);
+
+    res.json({
+      rooms,
+      totalCount,
+      currentPage: p,
+      totalPages: Math.ceil(totalCount / l),
+    });
+
+  } catch (error) {
     next(error);
   }
-}
+};
 
 //get -/api/listings/:id
 export const getOneListing = async(req,res,next)=>{
