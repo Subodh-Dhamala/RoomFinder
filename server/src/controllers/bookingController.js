@@ -1,7 +1,4 @@
-import Booking from '../models/Booking.js'
-import Room from '../models/Room.js';
-import mongoose from 'mongoose';
-
+import * as bookingService from '../services/booking.service';
 
 //post - /api/bookings
 export const createBooking = async (req,res,next)=>{
