@@ -1,28 +1,13 @@
-import mongoose from 'mongoose';
-import Room from '../models/Room.js';
-import cloudinary from '../config/cloudinary.js'
+import * as roomService from '../services/room.service.js';
 
 //post - /api/listings
 export const createListing = async (req,res,next) =>{
   try{
-    const {title, description, price, location, type ,images} = req.body;
-    
-    const room = await Room.create(
-      {
-        title, 
-        description,
-        price,
-        location,
-        type,
-        images,
-        landlordId: req.user._id,
-      }
-    );
 
+    const room = await roomService.createRoom(req.body, req.user._id);
     res.status(201).json(room);
 
   }
-
   catch(error){
     next(error);
   }
@@ -32,38 +17,8 @@ export const createListing = async (req,res,next) =>{
 //get - /api/listings
 export const getAllListings = async (req, res, next) => {
   try {
-    const { location, minPrice, maxPrice, type, page, limit } = req.query;
-
-    const filter = { isAvailable: true };
-
-    if (location) {
-      filter.location = { $regex: location, $options: "i" };
-    }
-
-    if (type) filter.type = type;
-
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = Number(minPrice);
-      if (maxPrice) filter.price.$lte = Number(maxPrice);
-    }
-
-    const p = Math.max(1, parseInt(page) || 1);
-    const l = Math.min(50, parseInt(limit) || 10);
-
-    const rooms = await Room.find(filter)
-      .skip((p - 1) * l)
-      .limit(l);
-
-    const totalCount = await Room.countDocuments(filter);
-
-    res.json({
-      rooms,
-      totalCount,
-      currentPage: p,
-      totalPages: Math.ceil(totalCount / l),
-    });
-
+    const result = await roomService.getAllRooms(req.query);
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -73,16 +28,7 @@ export const getAllListings = async (req, res, next) => {
 export const getOneListing = async(req,res,next)=>{
   try{
 
-    if(!mongoose.Types.ObjectId.isValid(req.params.id)){
-      return res.status(400).json({message: 'Invalid ID'})  
-    }
-
-    const room = await Room.findById(req.params.id);
-
-    if(!room){
-      return res.status(404).json({message: 'Room not found'});
-    }
-
+    const room = await roomService.getRoomById(req.params.id);
     res.json(room);
   }
   catch(error){
@@ -94,78 +40,19 @@ export const getOneListing = async(req,res,next)=>{
 //patch - /api/listings/:id
 export const updateListing = async(req,res,next)=>{
   try{
-
-    if(!mongoose.Types.ObjectId.isValid(req.params.id)){
-      return res.status(400).json({message:'Invalid Id'})
-    }
-
-    const room = await Room.findById(req.params.id);
-     
-    if(!room){
-      return res.status(404).json({message:'Room not found'});
-    }
-
-
-  if (room.landlordId.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ message: 'Not your listing' })
-  }
-
-  //if new images are sent, delete old ones from cloudinary first
-
-  if(req.body.images && req.body.images.length > 0){
-    for(const image of room.images){
-      await cloudinary.uploader.destroy(image.public_id);
-    }
-  }
-  
-  const allowedFields = ['title','description','price','location','type','images','isAvailable'];
-
-  const updates = {};
-
-  allowedFields.forEach((field)=>{
-    if(req.body[field] !== undefined) updates[field] = req.body[field]
-  });
-
-  const updated = await Room.findByIdAndUpdate(req.params.id, updates, {
-    new:true,
-  });
-
-  res.json(updated);
-
+    const room = await roomService.updateRoom(req.params.id,req.body,req.user._id);
+    res.json(room);
   }
   catch(error){
     next(error);
   }
 }
 
-
 //delete - /api/listings/:id
 export const deleteListing = async(req,res,next) =>{
   try{
-    
-    if(!mongoose.Types.ObjectId.isValid(req.params.id)){
-      return res.status(400).json({message: 'Invalid Id'});
-    }
 
-    const room = await Room.findById(req.params.id);
-
-    if(!room){
-      return res.status(404).json({message: 'Room not found!'});
-    }
-
-    if(room.landlordId.toString() !== req.user._id.toString()){
-      return res.status(403).json({
-        message: 'Not your listing'
-      });
-    }
-
-     // delete all images from cloudinary
-    for (const image of room.images) {
-      await cloudinary.uploader.destroy(image.public_id);
-    }
-
-    await room.deleteOne();
-
+    await roomService.deleteRoom(req.params.id, req.user._id);
     res.json({message: 'Listing deleted!'});
 
   }
