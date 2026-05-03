@@ -1,21 +1,11 @@
-import Wishlist from '../models/Wishlist.js';
-import mongoose from 'mongoose';
+import * as wishlistService from '../services/wishlist.service';
 
 //post - /api/wishlist/:roomId
 export const addToWishlist = async(req,res,next)=>{
   try{
 
-    if(!mongoose.Types.ObjectId.isValid(req.params.roomId)){
-      return res.status(400).json({message: 'Invalid room Id'});
-    }
-
-    await Wishlist.create({
-      tenantId: req.user._id,
-      roomId: req.params.roomId,
-    })
-
+    await wishlistService.addToWishlist(req.user._id,req.params.roomId);
     res.status(201).json({message: 'Room saved to wishlist'});
-
   }
   catch(error){
     if(error.code == 11000){
@@ -28,17 +18,9 @@ export const addToWishlist = async(req,res,next)=>{
 //delete /api/wishlist/:roomId
 export const removeFromWishlist = async(req,res,next)=>{
   try{
-    if (!mongoose.Types.ObjectId.isValid(req.params.roomId)) {
-      return res.status(400).json({ message: 'Invalid room ID' })
-    }
 
-    await Wishlist.findOneAndDelete({
-      tenantId: req.user._id,
-      roomId: req.params.roomId,
-    })
-
+    await wishlistService.removeFromWishlist(req.user._id,req.params.roomId);
     res.json({message: 'Room removed form the wishlist'});
-
   }
   catch(error){
     next(error);
@@ -49,8 +31,7 @@ export const removeFromWishlist = async(req,res,next)=>{
 //get /api/wishlist
 export const getWishlist = async(req,res,next)=>{
   try{
-    const wishlist = await Wishlist.find({tenantId: req.user._id}).populate('roomId');
-
+    const wishlist = await wishlistService.getWishlist(req.user._id);
     res.json(wishlist);
   }
   catch(error){
