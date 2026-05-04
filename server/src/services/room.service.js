@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import cloudinary from '../config/cloudinary.js'
 import Room from '../models/Room.js'
+import AppError from '../utils/AppError.js'
 
 export const createRoom = async (data, landlordId) => {
   const { title, description, price, location, type, images } = data
@@ -39,31 +40,35 @@ export const getAllRooms = async (query) => {
 
 export const getRoomById = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw { status: 400, message: 'Invalid ID' }
+    throw new AppError('Invalid ID', 400)
   }
 
   const room = await Room.findById(id)
-  if (!room) throw { status: 404, message: 'Room not found' }
+  if (!room) throw new AppError('Room not found', 404)
 
   return room;
 }
 
 export const updateRoom = async (id, data, userId) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw { status: 400, message: 'Invalid ID' }
+    throw new AppError('Invalid ID', 400)
   }
 
   const room = await Room.findById(id)
-  if (!room) throw { status: 404, message: 'Room not found' }
+  if (!room) throw new AppError('Room not found', 404)
 
   if (room.landlordId.toString() !== userId.toString()) {
-    throw { status: 403, message: 'Not your listing' }
+    throw new AppError('Not your listing', 403)
   }
 
   //if new images are sent then delete old ones from cloudinary
   if (data.images && data.images.length > 0) {
     for (const image of room.images) {
-      await cloudinary.uploader.destroy(image.public_id)
+      try {
+        await cloudinary.uploader.destroy(image.public_id)
+      } catch (err) {
+        console.error('Cloudinary delete failed:', err.message)
+      }
     }
   }
 
@@ -78,19 +83,23 @@ export const updateRoom = async (id, data, userId) => {
 
 export const deleteRoom = async (id, userId) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw { status: 400, message: 'Invalid ID' }
+    throw new AppError('Invalid ID', 400)
   }
 
   const room = await Room.findById(id)
-  if (!room) throw { status: 404, message: 'Room not found' }
+  if (!room) throw new AppError('Room not found', 404)
 
   if (room.landlordId.toString() !== userId.toString()) {
-    throw { status: 403, message: 'Not your listing' }
+    throw new AppError('Not your listing', 403)
   }
 
   //delete all images from cloudinary
   for (const image of room.images) {
-    await cloudinary.uploader.destroy(image.public_id)
+    try {
+      await cloudinary.uploader.destroy(image.public_id)
+    } catch (err) {
+      console.error('Cloudinary delete failed:', err.message)
+    }
   }
 
   await room.deleteOne()

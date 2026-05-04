@@ -1,10 +1,11 @@
 import mongoose from 'mongoose'
 import Booking from '../models/Booking.js'
 import Room from '../models/Room.js'
+import AppError from '../utils/AppError.js'
 
 export const createBooking = async (roomId, message, tenantId) => {
   if (!mongoose.Types.ObjectId.isValid(roomId)) {
-    throw { status: 400, message: 'Invalid room ID' }
+    throw new AppError('Invalid room ID', 400)
   }
 
   //atomic update — prevents double booking
@@ -14,7 +15,7 @@ export const createBooking = async (roomId, message, tenantId) => {
     { new: true }
   )
 
-  if (!room) throw { status: 400, message: 'Room is already booked!' }
+  if (!room) throw new AppError('Room is already booked!', 400)
 
   return await Booking.create({
     tenantId,
@@ -34,18 +35,18 @@ export const getIncomingBookings = async (landlordId) => {
 
 export const updateBookingStatus = async (bookingId, status, landlordId) => {
   if (!mongoose.Types.ObjectId.isValid(bookingId)) {
-    throw { status: 400, message: 'Invalid booking ID' }
+    throw new AppError('Invalid booking ID', 400)
   }
 
   if (!['accepted', 'rejected'].includes(status)) {
-    throw { status: 400, message: 'Invalid status' }
+    throw new AppError('Invalid status', 400)
   }
 
   const booking = await Booking.findById(bookingId)
-  if (!booking) throw { status: 404, message: 'Booking not found' }
+  if (!booking) throw new AppError('Booking not found', 404)
 
   if (booking.landlordId.toString() !== landlordId.toString()) {
-    throw { status: 403, message: 'Not your booking' }
+    throw new AppError('Not your booking', 403)
   }
 
   // if accepted then atomic update to prevent race condition
@@ -55,7 +56,7 @@ export const updateBookingStatus = async (bookingId, status, landlordId) => {
       { $set: { isAvailable: false } },
       { new: true }
     )
-    if (!room) throw { status: 400, message: 'Room already booked' }
+    if (!room) throw new AppError('Room already booked', 400)
   }
 
   // if rejected then make room available again

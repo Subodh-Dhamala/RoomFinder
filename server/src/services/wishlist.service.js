@@ -1,16 +1,17 @@
 import mongoose from 'mongoose'
 import Wishlist from '../models/Wishlist.js'
+import AppError from '../utils/AppError.js'
 
 export const addToWishlist = async (tenantId, roomId) => {
   if (!mongoose.Types.ObjectId.isValid(roomId)) {
-    throw { status: 400, message: 'Invalid room ID' }
+    throw new AppError('Invalid room ID', 400)
   }
 
   try {
     await Wishlist.create({ tenantId, roomId })
   } catch (error) {
     if (error.code === 11000) {
-      throw { status: 400, message: 'Already in wishlist' }
+      throw new AppError('Already in wishlist', 400)
     }
     throw error
   }
@@ -18,12 +19,14 @@ export const addToWishlist = async (tenantId, roomId) => {
 
 export const removeFromWishlist = async (tenantId, roomId) => {
   if (!mongoose.Types.ObjectId.isValid(roomId)) {
-    throw { status: 400, message: 'Invalid room ID' }
+    throw new AppError('Invalid room ID', 400)
   }
 
   await Wishlist.findOneAndDelete({ tenantId, roomId })
 }
 
 export const getWishlist = async (tenantId) => {
-  return await Wishlist.find({ tenantId }).populate('roomId')
+  return await Wishlist.find({ tenantId })
+    .populate('roomId')
+    .lean()
 }
