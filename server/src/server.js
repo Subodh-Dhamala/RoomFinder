@@ -10,7 +10,7 @@ import uploadRoutes from './routes/upload.js';
 import listingRoutes from './routes/listing.js';
 import wishlistRoutes from './routes/wishlist.js';
 import bookingRoutes from './routes/booking.js';
-import profileRoutes from './routes/profileRoutes.js'
+import profileRoutes from './routes/profile.js'
 
 
 dotenv.config();
