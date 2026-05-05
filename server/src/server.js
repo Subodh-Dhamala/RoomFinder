@@ -1,5 +1,7 @@
-import express from 'express';
 import dotenv from 'dotenv';
+dotenv.config() //must be before everything
+
+import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db.js';
 import errorHandler from './middlewares/errorHandler.js';
@@ -13,13 +15,14 @@ import bookingRoutes from './routes/booking.js';
 import profileRoutes from './routes/profile.js';
 import userRoutes from './routes/user.js';
 
-
-dotenv.config();
 connectDB();
 
 const app = express();
 
 app.use(cors());
+
+app.use('/api/webhooks', webhookRoutes); //must come before express.json()
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,8 +30,6 @@ app.get('/', (req, res) => {
   res.send('Server is running!');
 });
 
-
-app.use('/api/webhooks', webhookRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/wishlist', wishlistRoutes);
