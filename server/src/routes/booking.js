@@ -5,8 +5,8 @@ import {
   getIncomingBookings,
   updateBookingStatus,
 } from '../controllers/bookingController.js'
-import { protect } from '../middleware/auth.js'
-import requireRole from '../middleware/requireRole.js'
+import { protect } from '../middlewares/auth.js'
+import requireRole from '../middlewares/requireRole.js'
 
 const router = express.Router()
 

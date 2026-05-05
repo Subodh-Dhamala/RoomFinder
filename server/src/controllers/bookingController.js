@@ -1,4 +1,4 @@
-import * as bookingService from '../services/booking.service';
+import * as bookingService from '../services/booking.service.js';
 
 //post - /api/bookings
 export const createBooking = async (req,res,next)=>{

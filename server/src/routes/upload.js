@@ -1,5 +1,5 @@
 import express from 'express';
-import upload from '../middleware/upload.js';
+import upload from '../middlewares/upload.js';
 import {protect} from '../middlewares/auth.js';
 import {uploadImages} from '../controllers/uploadController.js';
 
