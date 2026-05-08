@@ -17,7 +17,7 @@ export const updateRole = async (req, res, next) => {
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { role },
-      { new: true },
+      { returnDocument: "after" }
     ).select("-__v");
 
     res.json(user);
