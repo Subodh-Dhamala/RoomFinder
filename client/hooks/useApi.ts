@@ -1,27 +1,13 @@
-import { useAuth } from "@clerk/nextjs";
-import { useEffect } from "react";
-import api from "@/lib/axios";
+'use client'
 
-export function useApi() {
-  const { getToken } = useAuth();
+import { useAuth } from '@clerk/nextjs'
+import { useEffect } from 'react'
+import { setTokenGetter } from '@/api/axios'
+
+export function useApi(): void {
+  const { getToken } = useAuth()
 
   useEffect(() => {
-    const interceptor = api.interceptors.request.use(
-      async (config: any) => {
-        const token = await getToken();
-
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-
-        return config;
-      }
-    );
-
-    return () => {
-      api.interceptors.request.eject(interceptor);
-    };
-  }, [getToken]);
-
-  return api;
+    setTokenGetter(getToken)
+  }, [getToken])
 }
