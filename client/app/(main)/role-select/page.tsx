@@ -3,13 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { useApi } from '@/hooks/useApi';
+import api from '@/api/axios';
 import { MdVpnKey, MdSearch } from 'react-icons/md';
 
 export default function RoleSelectPage() {
   const router = useRouter();
   const { user } = useUser();
-  const api = useApi();
 
   const [selected, setSelected] =
     useState<'tenant' | 'landlord' | null>(null);
