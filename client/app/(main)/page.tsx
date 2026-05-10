@@ -4,16 +4,19 @@ import { useListings } from '@/hooks/useListings'
 import RoomCard from '@/components/RoomCard'
 import SkeletonGrid from '@/components/SkeletonGrid'
 import EmptyState from '@/components/EmptyState'
+import ErrorState from '@/components/ErrorState'
 
 export default function HomePage() {
   const { data, isLoading, isError } = useListings()
 
   if (isLoading) return <main className="p-gutter"><SkeletonGrid /></main>
+
   if (isError) return (
-    <main className="flex items-center justify-center min-h-[60vh]">
-      <p className="text-error text-sm">Failed to load listings.</p>
+    <main className="p-gutter">
+      <ErrorState message="Failed to load listings." />
     </main>
   )
+
   if (!data?.rooms?.length) return (
     <main className="p-gutter">
       <EmptyState message="No rooms available" subMessage="Check back later for new listings" />
