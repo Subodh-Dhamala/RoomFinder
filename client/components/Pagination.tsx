@@ -1,6 +1,6 @@
 'use client'
 
-import { useFilterStore } from '@/store/filterStore'
+import { useFilterStore } from '@/store/FilterStore'
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 
 interface PaginationProps {
