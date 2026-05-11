@@ -11,7 +11,6 @@ export function useListings(filters: ListingFilters = {}) {
       filters.minPrice,
       filters.maxPrice,
       filters.page,
-      filters.limit,
     ],
     queryFn: () => getListings(filters),
     staleTime: 1000 * 60,
