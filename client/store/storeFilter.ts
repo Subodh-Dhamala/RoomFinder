@@ -21,7 +21,7 @@ minPrice: '',
 maxPrice: '',
 page: 1,
 
-setFilter: (key,value) => set({[key] : value, page: 1}),
+setFilter: (key,value) => set((state) => ({ ...state, [key] : value, page: 1})),
 setPage: (page) => set({page}),
 reset: () => set({ search: '', location: '', minPrice: '', maxPrice: '', page: 1 }),
 
