@@ -1,6 +1,6 @@
 'use client'
 
-import { useFilterStore } from '@/store/storeFilter';
+import { useFilterStore } from '@/store/FilterStore';
 import { FiSearch, FiMapPin, FiX } from 'react-icons/fi'
 
 export default function FilterBar() {
