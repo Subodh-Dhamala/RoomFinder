@@ -1,49 +1,70 @@
 'use client'
 
+import { useParams, useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import { useMutation } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
-import toast from 'react-hot-toast'
-import { createListing } from '@/api/listings.api'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { updateListing } from '@/api/listings.api'
+import { useListing } from '@/hooks/useListing'
 import ImageUpload from '@/components/ImageUpload'
-import type { CreateListingInput } from '@/types/listing'
+import ErrorState from '@/components/ErrorState'
+import toast from 'react-hot-toast'
+import type { UpdateListingInput } from '@/types/listing'
+import { useEffect } from 'react'
 
-export default function NewListingPage() {
+export default function EditListingPage() {
+  const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const queryClient = useQueryClient()
+
+  const { data: room, isLoading, isError } = useListing(id)
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
-  } = useForm<CreateListingInput>({
-    defaultValues: {
-      images: [],
-    },
-  })
+  } = useForm<UpdateListingInput>()
 
   const images = watch('images')
 
+  // pre-fill form once data loads
+  useEffect(() => {
+    if (room) {
+      reset({
+        title: room.title,
+        description: room.description,
+        price: room.price,
+        location: room.location,
+        images: room.images,
+      })
+    }
+  }, [room, reset])
+
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: CreateListingInput) => createListing(data),
+    mutationFn: (data: UpdateListingInput) => updateListing(id, data),
     onSuccess: () => {
-      toast.success('Listing created!')
+      toast.success('Listing updated!')
+      queryClient.invalidateQueries({ queryKey: ['landlord-listings'] })
+      queryClient.invalidateQueries({ queryKey: ['listing', id] })
       router.push('/landlord/listings')
     },
-    onError: () => toast.error('Failed to create listing'),
+    onError: () => toast.error('Failed to update listing'),
   })
+
+  if (isLoading) return <main className="p-gutter"><p className="text-on-surface-variant">Loading...</p></main>
+  if (isError) return <main className="p-gutter"><ErrorState message="Failed to load listing." /></main>
 
   return (
     <main className="max-w-2xl mx-auto px-gutter py-lg">
-      <h1 className="text-h2 font-h2 text-on-surface mb-lg">Create listing</h1>
+      <h1 className="text-h2 font-h2 text-on-surface mb-lg">Edit listing</h1>
 
       <form onSubmit={handleSubmit((data) => mutate(data))} className="flex flex-col gap-md">
         {/* Title */}
         <div className="flex flex-col gap-xs">
           <label className="text-label-sm font-label-sm text-on-surface">Title</label>
           <input
-            placeholder="Cozy room in Bhaktapur"
             {...register('title', { required: 'Title is required' })}
             className="border border-outline-variant rounded-lg px-md py-sm text-body-md focus:outline-none focus:border-primary"
           />
@@ -54,7 +75,6 @@ export default function NewListingPage() {
         <div className="flex flex-col gap-xs">
           <label className="text-label-sm font-label-sm text-on-surface">Location</label>
           <input
-            placeholder="Sallaghari, Bhaktapur"
             {...register('location', { required: 'Location is required' })}
             className="border border-outline-variant rounded-lg px-md py-sm text-body-md focus:outline-none focus:border-primary"
           />
@@ -65,7 +85,6 @@ export default function NewListingPage() {
         <div className="flex flex-col gap-xs">
           <label className="text-label-sm font-label-sm text-on-surface">Price per month (Rs.)</label>
           <input
-            placeholder="12000"
             type="number"
             {...register('price', { required: 'Price is required', valueAsNumber: true })}
             className="border border-outline-variant rounded-lg px-md py-sm text-body-md focus:outline-none focus:border-primary"
@@ -77,7 +96,6 @@ export default function NewListingPage() {
         <div className="flex flex-col gap-xs">
           <label className="text-label-sm font-label-sm text-on-surface">Description</label>
           <textarea
-            placeholder="Describe the room..."
             {...register('description')}
             rows={4}
             className="border border-outline-variant rounded-lg px-md py-sm text-body-md focus:outline-none focus:border-primary resize-none"
@@ -88,7 +106,7 @@ export default function NewListingPage() {
         <div className="flex flex-col gap-xs">
           <label className="text-label-sm font-label-sm text-on-surface">Images</label>
           <ImageUpload
-            value={images}
+            value={images || []}
             onChange={(imgs) => setValue('images', imgs)}
           />
         </div>
@@ -99,7 +117,7 @@ export default function NewListingPage() {
           disabled={isPending}
           className="bg-primary text-on-primary py-md rounded-lg text-label-sm font-label-sm hover:bg-primary-container transition-colors disabled:opacity-50"
         >
-          {isPending ? 'Creating...' : 'Create listing'}
+          {isPending ? 'Saving...' : 'Save changes'}
         </button>
       </form>
     </main>
