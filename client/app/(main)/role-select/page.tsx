@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import api from '@/api/axios';
+import { updateRole } from '@/api/users.api';
 import { MdVpnKey, MdSearch } from 'react-icons/md';
 
 export default function RoleSelectPage() {
@@ -13,26 +13,17 @@ export default function RoleSelectPage() {
   const [selected, setSelected] =
     useState<'tenant' | 'landlord' | null>(null);
 
-  const handleSelect = async (
-    role: 'tenant' | 'landlord'
-  ) => {
+  const handleSelect = async (role: 'tenant' | 'landlord') => {
     setSelected(role);
-
     try {
-      await api.patch('/api/users/role', { role });
+      await updateRole(role);
       await user?.reload();
-
-      router.push(
-        role === 'landlord'
-          ? '/landlord/listings'
-          : '/'
-      );
+      router.push(role === 'landlord' ? '/landlord/listings' : '/');
     } catch (err) {
       console.error('Role update failed:', err);
       setSelected(null);
     }
   };
-
   return (
     <main className="min-h-screen flex items-center justify-center bg-background px-6">
       <div className="w-full max-w-5xl">

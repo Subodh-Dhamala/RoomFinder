@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { uploadImages } from '@/api/upload'
+import { uploadImages } from '@/api/upload.api'
 import type { ListingImage } from '@/types/listing'
 import { FiUpload, FiX } from 'react-icons/fi'
 
