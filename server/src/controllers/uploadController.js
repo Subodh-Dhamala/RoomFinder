@@ -10,7 +10,7 @@ export const uploadImages = (req,res)=>{
     public_id: file.filename,
   })
   )
-
-res.status(200).json({images});
+  
+res.status(200).json(images);
 
 }
