@@ -4,7 +4,7 @@ import * as bookingService from '../services/booking.service.js';
 export const createBooking = async (req,res,next)=>{
   try{
 
-    const booking = await bookingService.createBooking(req,body.roomId, req.body.message,req.user._id);
+    const booking = await bookingService.createBooking(req.body.roomId, req.body.message,req.user._id);
     res.status(201).json(booking);
   }
   catch(error){
