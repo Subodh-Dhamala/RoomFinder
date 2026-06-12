@@ -21,7 +21,7 @@ export default function RoomDetailPage() {
       {room.images?.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-sm mb-lg rounded-xl overflow-hidden">
           {room.images.map((img, i) => (
-            <div key={i} className="relative aspect-[4/3] bg-surface-container">
+            <div key={i} className="relative aspect-4/3 bg-surface-container">
               <Image
                 src={img.url}
                 alt={`${room.title} image ${i + 1}`}
