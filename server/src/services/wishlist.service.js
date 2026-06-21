@@ -3,30 +3,43 @@ import Wishlist from '../models/Wishlist.js'
 import AppError from '../utils/AppError.js'
 
 export const addToWishlist = async (tenantId, roomId) => {
-  if (!mongoose.Types.ObjectId.isValid(roomId)) {
-    throw new AppError('Invalid room ID', 400)
+  const cleanRoomId = roomId?.toString().trim();
+
+  if (!mongoose.Types.ObjectId.isValid(cleanRoomId)) {
+    throw new AppError('Invalid room ID', 400);
   }
 
   try {
-    await Wishlist.create({ tenantId, roomId })
+    const result = await Wishlist.create({ 
+      tenantId: new mongoose.Types.ObjectId(tenantId), 
+      roomId: new mongoose.Types.ObjectId(cleanRoomId) 
+    });
+    return result;
   } catch (error) {
     if (error.code === 11000) {
-      throw new AppError('Already in wishlist', 400)
+      const duplicateError = new Error('Already in wishlist');
+      (duplicateError).statusCode = 400;
+      throw duplicateError;
     }
-    throw error
+    throw error;
   }
 }
 
 export const removeFromWishlist = async (tenantId, roomId) => {
-  if (!mongoose.Types.ObjectId.isValid(roomId)) {
-    throw new AppError('Invalid room ID', 400)
+  const cleanRoomId = roomId?.toString().trim();
+
+  if (!mongoose.Types.ObjectId.isValid(cleanRoomId)) {
+    throw new AppError('Invalid room ID', 400);
   }
 
-  await Wishlist.findOneAndDelete({ tenantId, roomId })
+  await Wishlist.findOneAndDelete({ 
+    tenantId: new mongoose.Types.ObjectId(tenantId), 
+    roomId: new mongoose.Types.ObjectId(cleanRoomId) 
+  });
 }
 
 export const getWishlist = async (tenantId) => {
-  return await Wishlist.find({ tenantId })
+  return await Wishlist.find({ tenantId: new mongoose.Types.ObjectId(tenantId) })
     .populate('roomId')
-    .lean()
+    .lean();
 }

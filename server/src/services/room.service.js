@@ -9,10 +9,12 @@ export const createRoom = async (data, landlordId) => {
 }
 
 export const getAllRooms = async (query) => {
-  const { location, minPrice, maxPrice, type, page, limit } = query
+  const { search, location, minPrice, maxPrice, type, page, limit } = query;
+
 
   const filter = { isAvailable: true }
 
+  if (search) filter.title = { $regex: search, $options: 'i' }
   if (location) filter.location = { $regex: location, $options: 'i' }
   if (type) filter.type = type
   if (minPrice || maxPrice) {
