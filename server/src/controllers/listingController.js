@@ -60,3 +60,13 @@ export const deleteListing = async(req,res,next) =>{
     next(error);
   }
 }
+
+//get - /api/listings/mine
+export const getMyListings = async (req, res, next) => {
+  try {
+    const rooms = await roomService.getMyRooms(req.user._id)
+    res.json({ rooms })
+  } catch (error) {
+    next(error)
+  }
+}

@@ -16,6 +16,8 @@ const userSchema = new mongoose.Schema(
       facebook: { type: String },
       instagram: { type: String },
       twitter: { type: String },
+      linkedin: {type: String},
+      website : {type: String},
     },
   },
   { timestamps: true }

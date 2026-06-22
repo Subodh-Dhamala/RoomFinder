@@ -1,39 +1,37 @@
 import cloudinary from '../config/cloudinary.js';
 import User from '../models/User.js';
-import Room from '../models/Booking.js';
+import Booking from '../models/Booking.js';
+import Room from '../models/Room.js';
 import { updateProfileSchema } from "../validations/profile.validation.js"
 import AppError from "../utils/AppError.js"
 
-export const getProfile = async (userId, role)=>{
+export const getProfile = async (userId, role) => {
   const user = await User.findById(userId).select('-__v').lean();
-  if(!user) throw new AppError('User not found',404);
+  if (!user) throw new AppError('User not found', 404);
 
   let data;
-  if(role === 'landlord'){
-    data = await Room.find({landlordId: userId}).sort({createdAt: -1}).lean();
+  if (role === 'landlord') {
+    data = await Room.find({ landlordId: userId }).sort({ createdAt: -1 }).lean();
+  }
+  else if (role === 'tenant') { 
+    data = await Booking.find({ tenantId: userId })
+      .populate('roomId', 'title price location images')
+      .sort({ createdAt: -1 })
+      .lean()
+  }
+  else {
+    throw new AppError('Invalid role', 400);
   }
 
-  else if(role === 'tentant'){
-    data = await Booking.find({tenantId : userId})
-    .populate('roomId','title price location images')
-    .sort({createdAt: -1})
-    .lean()
-  }
-
-  else{
-    throw new AppError('Invalid role',400);
-  }
-
-  return {user,data};
-
+  return { user, data };
 }
 
-export const updateProfile = async (userId,updates) =>{
-  const allowedFields = ['name','bio','phone','social'];
+export const updateProfile = async (userId, updates) => {
+  const allowedFields = ['name', 'bio', 'phone', 'social'];
 
   const result = updateProfileSchema.safeParse(updates);
 
- if (!result.success) {
+  if (!result.success) {
     throw new AppError(result.error.errors[0].message, 400)
   }
 
@@ -55,27 +53,35 @@ export const updateProfile = async (userId,updates) =>{
   if (!updated) throw new AppError('User not found', 404)
 
   return updated;
-
 }
 
-export const updateAvatar = async (userId, avatar) =>{
-  const user = await User.findById(userId);
-  if(!user) throw new Error('User not found', 404);
+export const updateAvatar = async (userId, avatar) => {
+  const user = await User.findById(userId)
+  if (!user) throw new AppError('User not found', 404)
 
-  const oldPublicId = user.avatar?.public_id;
+  const oldPublicId = user.avatar?.public_id
 
-  const updated  = user.findByIdAndUpdate(userID, {avatar}, {new:true})
-  .select('-__v')
-  .lean()
+  const updated = await User.findByIdAndUpdate(userId, { avatar }, { new: true })  
+    .select('-__v')
+    .lean()
 
-  if(!updated) throw new AppError('User not found',404);
-   if (oldPublicId) {
+  if (!updated) throw new AppError('User not found', 404)
+
+  if (oldPublicId) {
     try {
       await cloudinary.uploader.destroy(oldPublicId)
     } catch (err) {
       console.error('Cloudinary cleanup failed:', err.message)
     }
   }
- 
-  return updated;
+
+  return updated
+}
+
+export const getPublicProfile = async (id) => {
+  const user = await User.findById(id)
+    .select('name email avatar bio phone social role createdAt')
+    .lean()
+  if (!user) throw new AppError('User not found', 404)
+  return user
 }

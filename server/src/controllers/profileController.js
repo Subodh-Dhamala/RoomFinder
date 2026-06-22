@@ -32,3 +32,12 @@ export const updateAvatar = async (req, res, next) => {
   }
 }
 
+//get -api/profile/:id
+export const getPublicProfile = async (req, res, next) => {
+  try {
+    const user = await profileService.getPublicProfile(req.params.id)
+    res.json(user)
+  } catch (error) {
+    next(error)
+  }
+}

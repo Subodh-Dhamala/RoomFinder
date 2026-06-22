@@ -4,8 +4,8 @@ import mongoose from 'mongoose';
 const bookingSchema = new mongoose.Schema(
   {
 
-    tenantId: {type: String},
-    landlordId: {type: String},
+tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+landlordId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     roomId:{ type: mongoose.Schema.Types.ObjectId, ref:'Room'},
     status:{
       type:String,

@@ -6,6 +6,7 @@ import{
   getOneListing,
   updateListing,
   deleteListing,
+  getMyListings
 } from '../controllers/listingController.js';
 
 import {protect} from '../middlewares/auth.js';
@@ -18,5 +19,6 @@ router.get('/',getAllListings);
 router.get('/:id',getOneListing);
 router.patch('/:id',protect, requireRole('landlord'), updateListing);
 router.delete('/:id',protect,requireRole('landlord'),deleteListing);
+router.get('/mine', protect, requireRole('landlord'), getMyListings) 
 
 export default router;

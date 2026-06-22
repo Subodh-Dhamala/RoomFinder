@@ -3,8 +3,7 @@ import * as bookingService from '../services/booking.service.js';
 //post - /api/bookings
 export const createBooking = async (req,res,next)=>{
   try{
-
-    const booking = await bookingService.createBooking(req.body.roomId, req.body.message,req.user._id);
+    const booking = await bookingService.createBooking(req.body.roomId, req.body.message, req.user._id);
     res.status(201).json(booking);
   }
   catch(error){
@@ -23,7 +22,6 @@ export const getMyBookings = async(req,res,next)=>{
   }
 };
 
-
 //get /api/bookings/incoming (bookings where user is landlord)
 export const getIncomingBookings = async(req,res,next)=>{
   try{
@@ -38,15 +36,12 @@ export const getIncomingBookings = async(req,res,next)=>{
 //patch /api/bookings/:id/status
 export const updateBookingStatus = async(req,res,next)=>{
   try{
-
    const booking = await bookingService.updateBookingStatus(
       req.params.id,
-      req.params.status,
-      req.user_.id
+      req.body.status, // Ensure this comes from req.body
+      req.user._id     // Ensure this is req.user._id
     )
-  
     res.json(booking);
-
   }
   catch(error){
     next(error);

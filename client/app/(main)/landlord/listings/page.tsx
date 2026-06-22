@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getListings, deleteListing } from '@/api/listings.api'
+import { getMyListings, deleteListing } from '@/api/listings.api'
 import SkeletonGrid from '@/components/SkeletonGrid'
 import EmptyState from '@/components/EmptyState'
 import ErrorState from '@/components/ErrorState'
@@ -15,7 +15,7 @@ export default function LandlordListingsPage() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['landlord-listings'],
-    queryFn: () => getListings({}),
+    queryFn: () => getMyListings(),
   })
 
   const { mutate: handleDelete, isPending: isDeleting } = useMutation({

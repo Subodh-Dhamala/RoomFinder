@@ -1,30 +1,56 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getIncomingBookings, updateBookingStatus } from '@/api/bookings.api'
-import type { BookingStatus } from '@/api/bookings.api'
+import { useAuth } from '@clerk/nextjs'
+import axios from 'axios'
 import StatusBadge from '@/components/StatusBadge'
 import EmptyState from '@/components/EmptyState'
 import ErrorState from '@/components/ErrorState'
 import SkeletonGrid from '@/components/SkeletonGrid'
 import toast from 'react-hot-toast'
+import Link from 'next/link' // ✅ import Link for client-side navigation
 
 export default function LandlordBookingsPage() {
   const queryClient = useQueryClient()
+  const { getToken } = useAuth()
 
   const { data: bookings, isLoading, isError } = useQuery({
     queryKey: ['incoming-bookings'],
-    queryFn: getIncomingBookings,
+    queryFn: async () => {
+      const token = await getToken()
+      const response = await axios.get('http://localhost:5000/api/bookings/incoming', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        withCredentials: false
+      })
+      return response.data
+    },
   })
 
   const { mutate: updateStatus, isPending } = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: BookingStatus }) =>
-      updateBookingStatus(id, status),
+    mutationFn: async ({ id, status }: { id: string; status: 'accepted' | 'rejected' }) => {
+      const token = await getToken()
+      const response = await axios.patch(
+        `http://localhost:5000/api/bookings/${id}/status`,
+        { status },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          withCredentials: false
+        }
+      )
+      return response.data
+    },
     onSuccess: () => {
       toast.success('Booking updated')
       queryClient.invalidateQueries({ queryKey: ['incoming-bookings'] })
     },
-    onError: () => toast.error('Failed to update booking'),
+    onError: (error: any) => {
+      const serverMessage = error.response?.data?.message || 'Failed to update booking'
+      toast.error(serverMessage)
+    },
   })
 
   if (isLoading) return <main className="p-gutter"><SkeletonGrid /></main>
@@ -41,29 +67,39 @@ export default function LandlordBookingsPage() {
         />
       ) : (
         <div className="flex flex-col gap-md">
-          {bookings.map(booking => (
+          {bookings.map((booking: any) => (
             <div
               key={booking._id}
               className="border border-outline-variant rounded-xl p-md bg-white flex flex-col gap-sm"
             >
-              {/* Room info */}
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-h3 font-h3 text-on-surface">
-                    {booking.roomId.title}
+                    {booking.roomId?.title || 'Unknown Room'}
                   </h3>
                   <p className="text-body-md text-on-surface-variant">
-                    {booking.roomId.location}
+                    {booking.roomId?.location || 'No location provided'}
                   </p>
                 </div>
                 <StatusBadge status={booking.status} />
               </div>
 
-              {/* Tenant info */}
               <div className="border-t border-outline-variant/30 pt-sm">
                 <p className="text-body-md text-on-surface-variant">
                   <span className="font-medium text-on-surface">Tenant: </span>
-                  {booking.tenantId.name} — {booking.tenantId.email}
+                  {/* ✅ Clickable tenant name */}
+                  {booking.tenantId?._id ? (
+                    <Link
+                      href={`/profile/${booking.tenantId._id}`}
+                      className="text-primary hover:underline"
+                    >
+                      {booking.tenantId?.name || booking.tenantId?.username || 'Unknown Tenant'}
+                    </Link>
+                  ) : (
+                    <span>{booking.tenantId?.name || booking.tenantId?.username || 'Unknown Tenant'}</span>
+                  )}
+                  {' — '}
+                  {booking.tenantId?.email || 'No Email'}
                 </p>
                 {booking.message && (
                   <p className="text-body-md text-on-surface-variant mt-xs">
@@ -73,7 +109,6 @@ export default function LandlordBookingsPage() {
                 )}
               </div>
 
-              {/* Actions — only show if pending */}
               {booking.status === 'pending' && (
                 <div className="flex gap-sm pt-xs">
                   <button

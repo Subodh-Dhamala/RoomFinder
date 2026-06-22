@@ -5,17 +5,21 @@ import AppError from '../utils/AppError.js'
 
 export const createRoom = async (data, landlordId) => {
   const { title, description, price, location, type, images } = data
-  return await Room.create({ title, description, price, location, type, images, landlordId });
+  return await Room.create({ title, description, price, location, type, images, landlordId })
 }
 
 export const getAllRooms = async (query) => {
-  const { search, location, minPrice, maxPrice, type, page, limit } = query;
-
+  const { search, minPrice, maxPrice, type, page, limit } = query
 
   const filter = { isAvailable: true }
 
-  if (search) filter.title = { $regex: search, $options: 'i' }
-  if (location) filter.location = { $regex: location, $options: 'i' }
+  if (search) {
+    filter.$or = [
+      { title: { $regex: search, $options: 'i' } },
+      { location: { $regex: search, $options: 'i' } },
+    ]
+  }
+
   if (type) filter.type = type
   if (minPrice || maxPrice) {
     filter.price = {}
@@ -24,7 +28,7 @@ export const getAllRooms = async (query) => {
   }
 
   const p = Math.max(1, parseInt(page) || 1)
-  const l = Math.min(50, parseInt(limit) || 10)
+  const l = Math.min(50, parseInt(limit) || 9)
 
   const rooms = await Room.find(filter)
     .skip((p - 1) * l)
@@ -48,7 +52,7 @@ export const getRoomById = async (id) => {
   const room = await Room.findById(id)
   if (!room) throw new AppError('Room not found', 404)
 
-  return room;
+  return room
 }
 
 export const updateRoom = async (id, data, userId) => {
@@ -63,7 +67,6 @@ export const updateRoom = async (id, data, userId) => {
     throw new AppError('Not your listing', 403)
   }
 
-  //if new images are sent then delete old ones from cloudinary
   if (data.images && data.images.length > 0) {
     for (const image of room.images) {
       try {
@@ -95,7 +98,6 @@ export const deleteRoom = async (id, userId) => {
     throw new AppError('Not your listing', 403)
   }
 
-  //delete all images from cloudinary
   for (const image of room.images) {
     try {
       await cloudinary.uploader.destroy(image.public_id)
@@ -105,4 +107,8 @@ export const deleteRoom = async (id, userId) => {
   }
 
   await room.deleteOne()
+}
+
+export const getMyRooms = async (landlordId) => {
+  return await Room.find({ landlordId }).sort({ createdAt: -1 }).lean()
 }

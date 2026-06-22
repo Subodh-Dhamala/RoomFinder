@@ -10,11 +10,13 @@ export const updateProfileSchema = z.object({
     .regex(/^(\+977)?(98|97)\d{8}$/, "Invalid phone number")
     .optional(),
 
-  social: z
-    .object({
-      facebook: z.string().optional(),
-      instagram: z.string().optional(),
-      twitter: z.string().optional(),
-    })
-    .optional(),
+social: z
+  .object({
+    facebook: z.string().optional(),
+    instagram: z.string().optional(),
+    twitter: z.string().optional(),
+    linkedin: z.string().optional(), 
+    website: z.string().optional(),   
+  })
+  .optional(),
 })

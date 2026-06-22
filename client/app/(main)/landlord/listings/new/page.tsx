@@ -65,9 +65,13 @@ export default function NewListingPage() {
         <div className="flex flex-col gap-xs">
           <label className="text-label-sm font-label-sm text-on-surface">Price per month (Rs.)</label>
           <input
-            placeholder="12000"
+            placeholder="99999"
             type="number"
-            {...register('price', { required: 'Price is required', valueAsNumber: true })}
+           {...register('price', {
+                required: 'Price is required',
+                valueAsNumber: true,
+                 min: { value: 1, message: 'Price must be greater than 0' }
+            })}
             className="border border-outline-variant rounded-lg px-md py-sm text-body-md focus:outline-none focus:border-primary"
           />
           {errors.price && <p className="text-error text-sm">{errors.price.message}</p>}

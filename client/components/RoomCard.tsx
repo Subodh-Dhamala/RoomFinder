@@ -11,7 +11,7 @@ export default function RoomCard({ room }: { room: Listing }) {
   return (
     <Link href={`/rooms/${room._id}`}>
       <div className="bg-surface-container-lowest rounded-xl overflow-hidden group border border-outline-variant/30 hover:shadow-md transition-shadow cursor-pointer">
-        <div className="relative aspect-4/3 overflow-hidden">
+        <div className="relative aspect-video overflow-hidden">
           {image ? (
             <Image
               src={image}

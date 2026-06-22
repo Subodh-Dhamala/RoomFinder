@@ -31,3 +31,8 @@ export const updateListing = async (id: string, data: UpdateListingInput): Promi
 export const deleteListing = async (id: string): Promise<void> => {
   await api.delete(`/api/listings/${id}`)
 }
+
+export const getMyListings = async (): Promise<ListingsResponse> => {
+  const res = await api.get('/api/listings/mine')
+  return res.data
+}

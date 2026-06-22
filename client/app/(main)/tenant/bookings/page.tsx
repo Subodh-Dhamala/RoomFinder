@@ -70,9 +70,10 @@ export default function TenantBookingsPage() {
 
       {bookings.length > 0 && (
         <div className="space-y-sm">
-          {bookings.map((booking) => {
-            const listing = booking.listing
-            if (!listing) return null
+          {bookings.map((booking: any) => {
+            // BACKEND ALIGNMENT: Fallback check for roomId or room if listing is undefined
+            const listing = booking.listing || booking.roomId || booking.room
+            if (!listing || typeof listing === 'string') return null
 
             const cover = listing.images?.[0]?.url
 
@@ -81,7 +82,6 @@ export default function TenantBookingsPage() {
                 key={booking._id}
                 className="bg-surface border border-outline-variant rounded-xl p-sm flex flex-col sm:flex-row sm:items-center gap-sm transition-all hover:shadow-sm"
               >
-                {/* Thumbnail */}
                 <div className="relative w-full sm:w-24 h-20 rounded-lg overflow-hidden shrink-0 bg-surface-container">
                   {cover ? (
                     <Image
@@ -98,7 +98,6 @@ export default function TenantBookingsPage() {
                   )}
                 </div>
 
-                {/* Info Text Stack */}
                 <div className="flex-1 min-w-0 space-y-xs">
                   <p className="text-body-md font-medium text-on-surface truncate">
                     {listing.title}
@@ -112,7 +111,6 @@ export default function TenantBookingsPage() {
                   </p>
                 </div>
 
-                {/* Status Badge */}
                 <div className="shrink-0 sm:pl-md flex items-center">
                   <StatusBadge status={booking.status} />
                 </div>

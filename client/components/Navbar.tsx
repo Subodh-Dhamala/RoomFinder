@@ -77,13 +77,18 @@ export default function Navbar() {
             Help
           </button>
 
-          {isSignedIn ? (
-            <UserButton />
-          ) : (
-            <Link href="/sign-in" className="rounded-lg bg-primary px-6 py-2 text-[14px] font-semibold text-white transition-all hover:opacity-90">
-              Sign In
-            </Link>
-          )}
+  {isSignedIn ? (
+  <div className="flex items-center gap-3">
+    <Link href="/profile" className={navLink("/profile")}>
+      Profile
+    </Link>
+    <UserButton />
+  </div>
+) : (
+  <Link href="/sign-in" className="rounded-lg bg-primary px-6 py-2 text-[14px] font-semibold text-white transition-all hover:opacity-90">
+    Sign In
+  </Link>
+)}
         </div>
 
       </div>

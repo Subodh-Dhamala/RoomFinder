@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { FiX } from 'react-icons/fi'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '@clerk/nextjs' // 1. IMPORT CLERK AUTH
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
@@ -15,6 +16,7 @@ interface BookingModalProps {
 
 export default function BookingModal({ listingId, listingTitle, price, onClose }: BookingModalProps) {
   const queryClient = useQueryClient()
+  const { getToken } = useAuth() // 2. EXTRACT GETTOKEN METHOD
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -27,9 +29,20 @@ export default function BookingModal({ listingId, listingTitle, price, onClose }
 
   const createBookingMutation = useMutation({
     mutationFn: async () => {
-      const response = await axios.post('http://localhost:5000/api/bookings', {
-        roomId: listingId
-      }, { withCredentials: true })
+      // 3. FETCH THE ACTIVE CLERK JWT TOKEN
+      const token = await getToken()
+      
+      // 4. SEND TOKEN IN EXPLICIT AUTHORIZATION HEADER
+      const response = await axios.post(
+        'http://localhost:5000/api/bookings', 
+        { roomId: listingId }, 
+        { 
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          withCredentials: false 
+        }
+      )
       return response.data
     },
     onMutate: () => {
