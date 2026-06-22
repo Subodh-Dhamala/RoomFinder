@@ -11,13 +11,13 @@ export default function RoomCard({ room }: { room: Listing }) {
   return (
     <Link href={`/rooms/${room._id}`}>
       <div className="bg-surface-container-lowest rounded-xl overflow-hidden group border border-outline-variant/30 hover:shadow-md transition-shadow cursor-pointer">
-        <div className="relative aspect-video overflow-hidden">
+        <div className="relative h-44 overflow-hidden">
           {image ? (
             <Image
               src={image}
               alt={room.title}
               fill
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
