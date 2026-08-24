@@ -48,7 +48,7 @@ export default function RoleSelectPage() {
             I am a...
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-lg text-on-surface-variant">
-            Select your role to customize your RoomFinder experience.
+            Select your role to customize your MeroRoom experience.
           </p>
         </div>
 

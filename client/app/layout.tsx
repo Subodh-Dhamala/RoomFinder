@@ -4,7 +4,7 @@ import {Toaster} from 'react-hot-toast';
 import './globals.css';
 
 export const metadata = {
-  title: "RoomFinder",
+  title: "MeroRoom",
   description: "Find your perfect room",
 }
 

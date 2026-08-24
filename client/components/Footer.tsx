@@ -7,11 +7,11 @@ export default function Footer() {
 
         <div className="flex flex-col items-center gap-xs md:items-start">
           <span className="font-semibold text-on-surface">
-            RoomFinder
+            MeroRoom
           </span>
 
           <p className="text-caption text-on-surface-variant">
-            © {new Date().getFullYear()} RoomFinder. All rights reserved.
+            © {new Date().getFullYear()} MeroRoom. All rights reserved.
           </p>
         </div>
 

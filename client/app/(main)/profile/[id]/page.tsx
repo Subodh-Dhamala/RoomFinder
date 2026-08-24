@@ -115,7 +115,7 @@ export default function PublicProfilePage() {
       <p className="text-xs text-outline text-center">
   {user.createdAt
     ? `Member since ${new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
-    : 'RoomFinder Member'
+    : 'MeroRoom Member'
   }
 </p>
 

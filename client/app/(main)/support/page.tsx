@@ -60,7 +60,7 @@ export default function SupportPage() {
         <section className="mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary-container/10 px-3 py-1.5 text-xs font-semibold text-primary">
             <FiHelpCircle size={14} />
-            RoomFinder Support
+            MeroRoom Support
           </div>
 
           <h1 className="mt-5 text-h2 font-h2 tracking-tight text-on-surface md:text-5xl">

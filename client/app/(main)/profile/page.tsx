@@ -452,7 +452,7 @@ export default function ProfilePage() {
                 year: 'numeric',
               }
             )}`
-          : 'RoomFinder Member'}
+          : 'MeroRoom Member'}
       </p>
     </main>
   )
