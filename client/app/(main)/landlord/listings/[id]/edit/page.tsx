@@ -10,6 +10,7 @@ import ErrorState from '@/components/ErrorState'
 import toast from 'react-hot-toast'
 import type { UpdateListingInput } from '@/types/listing'
 import { useEffect } from 'react'
+import { useState } from 'react'
 
 export default function EditListingPage() {
   const { id } = useParams<{ id: string }>()
@@ -28,6 +29,10 @@ export default function EditListingPage() {
   } = useForm<UpdateListingInput>()
 
   const images = watch('images')
+  const [isUploading, setIsUploading] = useState(false)
+  register('images', {
+    validate: (value) => (value?.length ?? 0) > 0 || 'Add at least one photo',
+  })
 
   useEffect(() => {
     if (room) {
@@ -97,6 +102,8 @@ export default function EditListingPage() {
                 id="title"
                 {...register('title', {
                   required: 'Title is required',
+                  validate: (value) =>
+                    (value?.trim().length ?? 0) >= 3 || 'Title must be at least 3 characters',
                 })}
                 className="h-9 rounded-md border border-outline-variant/70 bg-surface px-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
               />
@@ -120,6 +127,8 @@ export default function EditListingPage() {
                 id="location"
                 {...register('location', {
                   required: 'Location is required',
+                  validate: (value) =>
+                    (value?.trim().length ?? 0) >= 2 || 'Location must be at least 2 characters',
                 })}
                 className="h-9 rounded-md border border-outline-variant/70 bg-surface px-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
               />
@@ -154,6 +163,7 @@ export default function EditListingPage() {
                       value: 1,
                       message: 'Price must be greater than 0',
                     },
+                    validate: (value) => Number.isFinite(value) || 'Enter a valid price',
                   })}
                   className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface pl-9 pr-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
                 />
@@ -178,6 +188,7 @@ export default function EditListingPage() {
             <textarea
               id="description"
               {...register('description')}
+              maxLength={1000}
               rows={4}
               className="resize-none rounded-md border border-outline-variant/70 bg-surface px-sm py-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
             />
@@ -198,7 +209,13 @@ export default function EditListingPage() {
               <ImageUpload
                 value={images || []}
                 onChange={(imgs) => setValue('images', imgs)}
+                onUploadingChange={setIsUploading}
               />
+              {errors.images && (
+                <p className="mt-2 text-caption text-error">
+                  {errors.images.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -208,7 +225,7 @@ export default function EditListingPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              disabled={isPending}
+              disabled={isPending || isUploading}
               className="h-9 rounded-md border border-outline-variant/70 px-md text-label-sm font-label-sm text-on-surface transition-colors hover:bg-surface-container disabled:opacity-50"
             >
               Cancel
@@ -216,10 +233,10 @@ export default function EditListingPage() {
 
             <button
               type="submit"
-              disabled={isPending}
+              disabled={isPending || isUploading}
               className="h-9 rounded-md bg-primary px-lg text-label-sm font-label-sm text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isPending ? 'Saving...' : 'Save changes'}
+              {isUploading ? 'Uploading photos...' : isPending ? 'Saving...' : 'Save changes'}
             </button>
           </div>
         </div>

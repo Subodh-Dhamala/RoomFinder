@@ -1,6 +1,7 @@
 'use client'
 
 import { useForm } from 'react-hook-form'
+import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -25,6 +26,10 @@ export default function NewListingPage() {
   })
 
   const images = watch('images')
+  const [isUploading, setIsUploading] = useState(false)
+  register('images', {
+    validate: (value) => value.length > 0 || 'Add at least one photo',
+  })
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: CreateListingInput) => createListing(data),
@@ -98,6 +103,8 @@ export default function NewListingPage() {
                   placeholder="e.g. Cozy room in Bhaktapur"
                   {...register('title', {
                     required: 'Title is required',
+                    validate: (value) =>
+                      value.trim().length >= 3 || 'Title must be at least 3 characters',
                   })}
                   className="h-11 rounded-xl border border-outline-variant/70 bg-surface px-3.5 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-4 focus:ring-primary/5"
                 />
@@ -129,6 +136,8 @@ export default function NewListingPage() {
                       placeholder="Sallaghari, Bhaktapur"
                       {...register('location', {
                         required: 'Location is required',
+                        validate: (value) =>
+                          value.trim().length >= 2 || 'Location must be at least 2 characters',
                       })}
                       className="h-11 w-full rounded-xl border border-outline-variant/70 bg-surface pl-10 pr-3.5 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-4 focus:ring-primary/5"
                     />
@@ -166,6 +175,8 @@ export default function NewListingPage() {
                           value: 1,
                           message: 'Price must be greater than 0',
                         },
+                        validate: (value) =>
+                          Number.isFinite(value) || 'Enter a valid price',
                       })}
                       className="h-11 w-full rounded-xl border border-outline-variant/70 bg-surface pl-11 pr-3.5 text-sm font-medium text-on-surface outline-none transition-all placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-4 focus:ring-primary/5"
                     />
@@ -198,6 +209,7 @@ export default function NewListingPage() {
                   rows={5}
                   placeholder="Describe the room, facilities, nearby places, transportation, house rules..."
                   {...register('description')}
+                  maxLength={1000}
                   className="resize-none rounded-xl border border-outline-variant/70 bg-surface px-3.5 py-3 text-sm leading-6 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-4 focus:ring-primary/5"
                 />
 
@@ -238,7 +250,14 @@ export default function NewListingPage() {
                     shouldValidate: true,
                   })
                 }
+                onUploadingChange={setIsUploading}
               />
+
+              {errors.images && (
+                <p className="mt-2 text-xs font-medium text-error">
+                  {errors.images.message}
+                </p>
+              )}
 
               <div className="mt-4 flex items-start gap-2.5 rounded-lg bg-surface-container-low px-3 py-2.5">
                 <FiPlus
@@ -261,7 +280,7 @@ export default function NewListingPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              disabled={isPending}
+              disabled={isPending || isUploading}
               className="h-11 rounded-xl border border-outline-variant/70 px-5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancel
@@ -269,10 +288,10 @@ export default function NewListingPage() {
 
             <button
               type="submit"
-              disabled={isPending}
+              disabled={isPending || isUploading}
               className="h-11 rounded-xl bg-primary px-6 text-sm font-semibold text-on-primary shadow-sm transition-all hover:opacity-90 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isPending ? 'Creating listing...' : 'Create listing'}
+              {isUploading ? 'Uploading photos...' : isPending ? 'Creating listing...' : 'Create listing'}
             </button>
           </footer>
         </form>

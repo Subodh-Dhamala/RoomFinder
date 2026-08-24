@@ -8,9 +8,10 @@ interface AvatarUploadProps {
   currentUrl?: string
   name?: string
   onUpload: (avatar: { url: string; public_id: string }) => void
+  onUploadingChange?: (isUploading: boolean) => void
 }
 
-export default function AvatarUpload({ currentUrl, name, onUpload }: AvatarUploadProps) {
+export default function AvatarUpload({ currentUrl, name, onUpload, onUploadingChange }: AvatarUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,6 +19,7 @@ export default function AvatarUpload({ currentUrl, name, onUpload }: AvatarUploa
     if (!file) return
 
     setIsUploading(true)
+  onUploadingChange?.(true)
     try {
       const uploaded = await uploadImages([file])
       onUpload({ url: uploaded[0].url, public_id: uploaded[0].public_id })
@@ -25,6 +27,7 @@ export default function AvatarUpload({ currentUrl, name, onUpload }: AvatarUploa
       console.error('Avatar upload failed')
     } finally {
       setIsUploading(false)
+      onUploadingChange?.(false)
     }
   }
 
@@ -53,7 +56,7 @@ export default function AvatarUpload({ currentUrl, name, onUpload }: AvatarUploa
 
       <input
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         onChange={handleFileChange}
         className="hidden"
         disabled={isUploading}

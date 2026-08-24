@@ -16,7 +16,7 @@ export default function HomePage() {
   const router = useRouter()
   const { user, isLoaded } = useUser()
   const filters = useListingFilters()
-  const { data, isLoading, isError } = useListings(filters)
+  const { data, isLoading, isFetching, isError } = useListings(filters)
 
   useEffect(() => {
     if (isLoaded && user && !user.publicMetadata?.role) {
@@ -38,12 +38,22 @@ export default function HomePage() {
           <EmptyState message="No rooms available right now." subMessage="Check back later for new listings." />
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md">
+            <div
+              className="relative grid grid-cols-1 gap-md sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              aria-busy={isFetching}
+            >
               {data.rooms.map(room => (
                 <RoomCard key={room._id} room={room} />
               ))}
+              {isFetching && (
+                <div className="absolute inset-0 flex items-start justify-center bg-surface/60 pt-6 backdrop-blur-[1px]">
+                  <span className="rounded-md bg-surface-container-lowest px-3 py-2 text-sm text-on-surface-variant shadow-sm" role="status">
+                    Loading rooms...
+                  </span>
+                </div>
+              )}
             </div>
-            <Pagination totalPages={data.totalPages} />
+            <Pagination totalPages={data.totalPages} isLoading={isFetching} />
           </>
         )}
       </main>

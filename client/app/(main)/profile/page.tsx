@@ -31,11 +31,13 @@ type SocialKey =
 export default function ProfilePage() {
   const { data, isLoading, isError } = useProfile()
   const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile()
-  const { mutate: updateAvatar } = useUpdateAvatar()
+  const { mutate: updateAvatar, isPending: isSavingAvatar } = useUpdateAvatar()
 
   const user = data?.user
 
   const [isEditing, setIsEditing] = useState(false)
+  const [isAvatarUploading, setIsAvatarUploading] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [form, setForm] = useState({
     name: '',
     bio: '',
@@ -67,11 +69,35 @@ export default function ProfilePage() {
   }, [user])
 
   const handleSave = () => {
+    const nextErrors: Record<string, string> = {}
+    const name = form.name.trim()
+    const phone = form.phone.trim()
+
+    if (name.length < 2) nextErrors.name = 'Name must be at least 2 characters'
+    if (phone && !/^(\+977)?(98|97)\d{8}$/.test(phone)) {
+      nextErrors.phone = 'Enter a valid Nepal phone number'
+    }
+    if (form.bio.length > 500) nextErrors.bio = 'Bio must be 500 characters or less'
+
+    Object.entries(form.social).forEach(([key, value]) => {
+      if (!value.trim()) return
+
+      try {
+        const url = new URL(value)
+        if (!['http:', 'https:'].includes(url.protocol)) throw new Error()
+      } catch {
+        nextErrors[`social.${key}`] = 'Enter a valid http(s) URL'
+      }
+    })
+
+    setErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0) return
+
     updateProfile(
       {
-        name: form.name,
+        name,
         bio: form.bio,
-        phone: form.phone,
+        phone,
         social: {
           facebook: form.social.facebook || undefined,
           instagram: form.social.instagram || undefined,
@@ -81,7 +107,10 @@ export default function ProfilePage() {
         },
       },
       {
-        onSuccess: () => setIsEditing(false),
+        onSuccess: () => {
+          setErrors({})
+          setIsEditing(false)
+        },
       }
     )
   }
@@ -102,7 +131,8 @@ export default function ProfilePage() {
       })
     }
 
-    setIsEditing(false)
+  setErrors({})
+  setIsEditing(false)
   }
 
   const renderSocialValue = (val: string | undefined) => {
@@ -193,6 +223,7 @@ export default function ProfilePage() {
             currentUrl={user.avatar?.url}
             name={user.name}
             onUpload={updateAvatar}
+            onUploadingChange={setIsAvatarUploading}
           />
 
           <div className="min-w-0">
@@ -210,6 +241,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={() => setIsEditing(true)}
+            disabled={isAvatarUploading || isSavingAvatar}
             className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-outline-variant/60 px-sm text-caption font-medium text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
           >
             <FiEdit2 size={13} />
@@ -220,7 +252,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={handleCancel}
-              disabled={isSaving}
+              disabled={isSaving || isAvatarUploading || isSavingAvatar}
               className="inline-flex h-8 items-center gap-1.5 rounded-md px-sm text-caption font-medium text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-50"
             >
               <FiX size={13} />
@@ -230,7 +262,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={handleSave}
-              disabled={isSaving}
+              disabled={isSaving || isAvatarUploading || isSavingAvatar}
               className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-md text-caption font-medium text-on-primary transition-colors hover:bg-primary-container disabled:opacity-50"
             >
               <FiCheck size={13} />
@@ -253,17 +285,22 @@ export default function ProfilePage() {
               </label>
 
               {isEditing ? (
-                <input
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      name: e.target.value,
-                    }))
-                  }
-                  className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface px-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
-                  placeholder="Your name"
-                />
+                <>
+                  <input
+                    value={form.name}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        name: e.target.value,
+                      }))
+                    }
+                    className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface px-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
+                    placeholder="Your name"
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-caption text-error">{errors.name}</p>
+                  )}
+                </>
               ) : (
                 <p className="truncate text-body-sm text-on-surface">
                   {user.name || '—'}
@@ -288,24 +325,29 @@ export default function ProfilePage() {
               </label>
 
               {isEditing ? (
-                <div className="relative">
-                  <FiPhone
-                    size={13}
-                    className="absolute left-sm top-1/2 -translate-y-1/2 text-outline"
-                  />
+                <>
+                  <div className="relative">
+                    <FiPhone
+                      size={13}
+                      className="absolute left-sm top-1/2 -translate-y-1/2 text-outline"
+                    />
 
-                  <input
-                    value={form.phone}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        phone: e.target.value,
-                      }))
-                    }
-                    className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface pl-8 pr-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
-                    placeholder="+977 98XXXXXXXX"
-                  />
-                </div>
+                    <input
+                      value={form.phone}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          phone: e.target.value,
+                        }))
+                      }
+                      className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface pl-8 pr-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
+                      placeholder="+977 98XXXXXXXX"
+                    />
+                  </div>
+                  {errors.phone && (
+                    <p className="mt-1 text-caption text-error">{errors.phone}</p>
+                  )}
+                </>
               ) : (
                 <div className="flex h-9 items-center gap-2 text-body-sm text-on-surface-variant">
                   <FiPhone size={13} />
@@ -320,18 +362,23 @@ export default function ProfilePage() {
               </label>
 
               {isEditing ? (
-                <textarea
-                  value={form.bio}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      bio: e.target.value,
-                    }))
-                  }
-                  rows={3}
-                  className="w-full resize-none rounded-md border border-outline-variant/70 bg-surface px-sm py-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
-                  placeholder="Tell others a bit about yourself..."
-                />
+                <>
+                  <textarea
+                    value={form.bio}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        bio: e.target.value,
+                      }))
+                    }
+                    rows={3}
+                    className="w-full resize-none rounded-md border border-outline-variant/70 bg-surface px-sm py-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
+                    placeholder="Tell others a bit about yourself..."
+                  />
+                  {errors.bio && (
+                    <p className="mt-1 text-caption text-error">{errors.bio}</p>
+                  )}
+                </>
               ) : (
                 <p className="text-body-sm leading-relaxed text-on-surface-variant">
                   {user.bio || '—'}
@@ -355,27 +402,34 @@ export default function ProfilePage() {
                   </label>
 
                   {isEditing ? (
-                    <div className="relative">
-                      <Icon
-                        size={13}
-                        className={`absolute left-sm top-1/2 -translate-y-1/2 ${color}`}
-                      />
+                    <>
+                      <div className="relative">
+                        <Icon
+                          size={13}
+                          className={`absolute left-sm top-1/2 -translate-y-1/2 ${color}`}
+                        />
 
-                      <input
-                        value={form.social[key]}
-                        onChange={(e) =>
-                          setForm((f) => ({
-                            ...f,
-                            social: {
-                              ...f.social,
-                              [key]: e.target.value,
-                            },
-                          }))
-                        }
-                        className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface pl-8 pr-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
-                        placeholder={placeholder}
-                      />
-                    </div>
+                        <input
+                          value={form.social[key]}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              social: {
+                                ...f.social,
+                                [key]: e.target.value,
+                              },
+                            }))
+                          }
+                          className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface pl-8 pr-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
+                          placeholder={placeholder}
+                        />
+                      </div>
+                      {errors[`social.${key}`] && (
+                        <p className="mt-1 text-caption text-error">
+                          {errors[`social.${key}`]}
+                        </p>
+                      )}
+                    </>
                   ) : (
                     <div className="flex h-9 min-w-0 items-center gap-2">
                       <Icon size={13} className={color} />

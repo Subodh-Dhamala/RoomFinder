@@ -8,9 +8,10 @@ import { FiUpload, FiX } from 'react-icons/fi'
 interface ImageUploadProps {
   value: ListingImage[]
   onChange: (images: ListingImage[]) => void
+  onUploadingChange?: (isUploading: boolean) => void
 }
 
-export default function ImageUpload({ value, onChange }: ImageUploadProps) {
+export default function ImageUpload({ value, onChange, onUploadingChange }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,6 +19,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
     if (!files.length) return
 
     setIsUploading(true)
+    onUploadingChange?.(true)
     try {
       const uploaded = await uploadImages(files)
       onChange([...value, ...uploaded])
@@ -25,6 +27,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       console.error('Upload failed')
     } finally {
       setIsUploading(false)
+      onUploadingChange?.(false)
     }
   }
 
@@ -61,7 +64,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
         <input
           type="file"
           multiple
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           onChange={handleFileChange}
           className="hidden"
         />
