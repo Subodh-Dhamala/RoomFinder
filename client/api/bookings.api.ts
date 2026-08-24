@@ -10,7 +10,7 @@ export interface Booking {
     location: string
     price: number
     images: { url: string; public_id: string }[]
-  }
+  } | string | null
   tenantId: {
     _id: string
     name: string

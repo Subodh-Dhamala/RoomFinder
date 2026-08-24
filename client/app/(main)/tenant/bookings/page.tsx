@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useBookings } from '@/hooks/useBookings'
 import StatusBadge from '@/components/StatusBadge'
+import type { Booking } from '@/api/bookings.api'
 import { FiHome, FiMapPin } from 'react-icons/fi'
 
 export default function TenantBookingsPage() {
@@ -70,12 +71,13 @@ export default function TenantBookingsPage() {
 
       {bookings.length > 0 && (
         <div className="space-y-sm">
-          {bookings.map((booking: any) => {
-            // BACKEND ALIGNMENT: Fallback check for roomId or room if listing is undefined
-            const listing = booking.listing || booking.roomId || booking.room
-            if (!listing || typeof listing === 'string') return null
+          {bookings.map((booking: Booking) => {
+            const listing =
+              booking.roomId && typeof booking.roomId !== 'string'
+                ? booking.roomId
+                : null
 
-            const cover = listing.images?.[0]?.url
+            const cover = listing?.images?.[0]?.url
 
             return (
               <div
@@ -86,7 +88,7 @@ export default function TenantBookingsPage() {
                   {cover ? (
                     <Image
                       src={cover}
-                      alt={listing.title || 'Room image'}
+                      alt={listing.title}
                       fill
                       className="object-cover"
                       sizes="96px"
@@ -100,14 +102,20 @@ export default function TenantBookingsPage() {
 
                 <div className="flex-1 min-w-0 space-y-xs">
                   <p className="text-body-md font-medium text-on-surface truncate">
-                    {listing.title}
+                    {listing ? listing.title : 'Listing unavailable'}
                   </p>
                   <p className="text-body-sm text-on-surface-variant flex items-center gap-xs truncate">
                     <FiMapPin className="shrink-0 text-on-surface-variant" size={14} />
-                    <span>{listing.location}</span>
+                    <span>
+                      {listing ? listing.location : 'This room is no longer available'}
+                    </span>
                   </p>
                   <p className="text-body-sm text-primary font-medium">
-                    Rs. {listing.price?.toLocaleString()} <span className="text-caption text-on-surface-variant font-normal">/ month</span>
+                    {listing ? (
+                      <>Rs. {listing.price.toLocaleString()} <span className="text-caption text-on-surface-variant font-normal">/ month</span></>
+                    ) : (
+                      <span className="text-caption text-on-surface-variant font-normal">Details unavailable</span>
+                    )}
                   </p>
                 </div>
 

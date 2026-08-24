@@ -17,22 +17,27 @@ export const createBooking = async (roomId, message, tenantId) => {
 
   if (!room) throw new AppError('Room is already booked!', 400)
 
-  return await Booking.create({
+  const booking = await Booking.create({
     tenantId,
     landlordId: room.landlordId,
     roomId,
     message,
-  });
+  })
+
+  return await booking.populate('roomId')
 }
 
 export const getMyBookings = async (tenantId) => {
-  return await Booking.find({ tenantId }).populate('roomId')
+  return await Booking.find({ tenantId })
+    .populate('roomId')
+    .sort({ createdAt: -1 })
 }
 
 export const getIncomingBookings = async (landlordId) => {
   return await Booking.find({ landlordId })
     .populate('roomId')
     .populate('tenantId', 'name email avatar phone bio social')
+    .sort({ createdAt: -1 })
 }
 
 export const updateBookingStatus = async (bookingId, status, userId) => {
@@ -40,38 +45,34 @@ export const updateBookingStatus = async (bookingId, status, userId) => {
     throw new AppError('Invalid booking ID', 400)
   }
 
-  if (!['accepted', 'rejected', 'cancelled'].includes(status)) {
+  if (!['accepted', 'rejected'].includes(status)) {
     throw new AppError('Invalid status', 400)
   }
 
   const booking = await Booking.findById(bookingId)
   if (!booking) throw new AppError('Booking not found', 404)
 
-  // Validate Authorization
-  if (status === 'cancelled') {
-    if (booking.tenantId.toString() !== userId.toString()) {
-      throw new AppError('Not your booking to cancel', 403)
-    }
-  } else {
-    if (booking.landlordId.toString() !== userId.toString()) {
-      throw new AppError('Not your booking', 403)
-    }
+  if (booking.status !== 'pending') {
+    throw new AppError('This booking has already been decided', 400)
   }
 
-  const targetRoomId = booking.roomId._id ? booking.roomId._id : booking.roomId
+  // Validate Authorization
+  if (booking.landlordId.toString() !== userId.toString()) {
+    throw new AppError('Not your booking', 403)
+  }
 
-  // FIX: Accept logic updated to avoid "isAvailable: true" check
+  const targetRoomId = booking.roomId
+
   if (status === 'accepted') {
     await Room.findByIdAndUpdate(targetRoomId, { $set: { isAvailable: false } })
   }
 
-  // If rejected/cancelled, unlock the room
-  if (status === 'rejected' || status === 'cancelled') {
+  if (status === 'rejected') {
     await Room.findByIdAndUpdate(targetRoomId, { $set: { isAvailable: true } })
   }
 
   booking.status = status;
   await booking.save();
 
-  return booking;
+  return await booking.populate('roomId')
 }
