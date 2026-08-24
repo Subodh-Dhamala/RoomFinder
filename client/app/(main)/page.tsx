@@ -1,5 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 import { useListings } from '@/hooks/useListings'
 import { useListingFilters } from '@/hooks/useListingFilters'
 import RoomCard from '@/components/RoomCard'
@@ -10,8 +13,18 @@ import FilterBar from '@/components/FilterBar'
 import Pagination from '@/components/Pagination'
 
 export default function HomePage() {
+  const router = useRouter()
+  const { user, isLoaded } = useUser()
   const filters = useListingFilters()
   const { data, isLoading, isError } = useListings(filters)
+
+  useEffect(() => {
+    if (isLoaded && user && !user.publicMetadata?.role) {
+      router.replace('/role-select')
+    }
+  }, [isLoaded, router, user])
+
+  if (isLoaded && user && !user.publicMetadata?.role) return null
 
   return (
     <>

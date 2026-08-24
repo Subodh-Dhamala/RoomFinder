@@ -22,7 +22,10 @@ export const protect = [
 
       if (!user) {
         const clerkUser = await clerkClient.users.getUser(clerkId);
-        const email = clerkUser.primaryEmailAddress?.emailAddress;
+        const primaryEmail = clerkUser.emailAddresses?.find(
+          (address) => address.id === clerkUser.primaryEmailAddressId
+        );
+        const email = primaryEmail?.emailAddress ?? clerkUser.emailAddresses?.[0]?.emailAddress;
 
         if (!email) {
           return res.status(400).json({ message: 'Your Clerk account has no email address' });

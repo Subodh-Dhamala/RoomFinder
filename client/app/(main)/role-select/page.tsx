@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { updateRole } from '@/api/users.api';
@@ -13,6 +13,16 @@ export default function RoleSelectPage() {
   const [selected, setSelected] =
     useState<'tenant' | 'landlord' | null>(null);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.replace('/sign-in');
+    } else if (isLoaded && user?.publicMetadata?.role === 'landlord') {
+      router.replace('/landlord/listings');
+    } else if (isLoaded && user?.publicMetadata?.role === 'tenant') {
+      router.replace('/');
+    }
+  }, [isLoaded, router, user]);
 
   const handleSelect = async (role: 'tenant' | 'landlord') => {
     if (!isLoaded || !user || selected !== null) return;
