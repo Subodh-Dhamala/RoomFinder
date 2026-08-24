@@ -1,5 +1,10 @@
+import dns from "dns";
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+
 import dotenv from 'dotenv';
-dotenv.config() //must be before everything
+import { fileURLToPath } from 'node:url';
+
+dotenv.config({ path: fileURLToPath(new URL('./.env', import.meta.url)) });
 
 import express from 'express';
 import cors from 'cors';

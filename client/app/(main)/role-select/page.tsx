@@ -8,19 +8,24 @@ import { MdVpnKey, MdSearch } from 'react-icons/md';
 
 export default function RoleSelectPage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
   const [selected, setSelected] =
     useState<'tenant' | 'landlord' | null>(null);
+  const [error, setError] = useState('');
 
   const handleSelect = async (role: 'tenant' | 'landlord') => {
+    if (!isLoaded || !user || selected !== null) return;
+
     setSelected(role);
+    setError('');
     try {
       await updateRole(role);
       await user?.reload();
-      router.push(role === 'landlord' ? '/landlord/listings' : '/');
+      router.replace(role === 'landlord' ? '/landlord/listings' : '/');
     } catch (err) {
       console.error('Role update failed:', err);
+      setError('We could not save your role. Please try again.');
       setSelected(null);
     }
   };
@@ -42,7 +47,7 @@ export default function RoleSelectPage() {
           {/* LANDLORD */}
           <button
             onClick={() => handleSelect('landlord')}
-            disabled={selected !== null}
+            disabled={!isLoaded || !user || selected !== null}
             className={`group rounded-xl border bg-surface-container-lowest p-8 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70 ${
               selected === 'landlord'
                 ? 'border-primary shadow-lg'
@@ -71,7 +76,7 @@ export default function RoleSelectPage() {
           {/* TENANT */}
           <button
             onClick={() => handleSelect('tenant')}
-            disabled={selected !== null}
+            disabled={!isLoaded || !user || selected !== null}
             className={`group rounded-xl border bg-surface-container-lowest p-8 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70 ${
               selected === 'tenant'
                 ? 'border-primary shadow-lg'
@@ -87,7 +92,7 @@ export default function RoleSelectPage() {
             </h2>
 
             <p className="mb-6 text-on-surface-variant">
-              I'm looking for rooms, verified listings, and easy booking.
+              I am looking for rooms, verified listings, and easy booking.
             </p>
 
             <div className="w-full rounded-lg border border-primary py-3 text-sm font-semibold text-primary transition group-hover:bg-primary/5">
@@ -98,6 +103,12 @@ export default function RoleSelectPage() {
           </button>
 
         </div>
+
+        {error && (
+          <p className="mt-6 text-center text-sm text-error" role="alert">
+            {error}
+          </p>
+        )}
       </div>
     </main>
   );

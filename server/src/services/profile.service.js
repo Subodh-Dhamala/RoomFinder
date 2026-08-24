@@ -19,6 +19,9 @@ export const getProfile = async (userId, role) => {
       .sort({ createdAt: -1 })
       .lean()
   }
+  else if (role === null || role === undefined) {
+    data = [];
+  }
   else {
     throw new AppError('Invalid role', 400);
   }

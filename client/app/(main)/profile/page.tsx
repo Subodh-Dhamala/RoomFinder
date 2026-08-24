@@ -1,12 +1,32 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useProfile, useUpdateProfile, useUpdateAvatar } from '@/hooks/useProfile'
+import {
+  useProfile,
+  useUpdateProfile,
+  useUpdateAvatar,
+} from '@/hooks/useProfile'
 import AvatarUpload from '@/components/AvatarUpload'
 import ErrorState from '@/components/ErrorState'
-import { FiFacebook, FiInstagram, FiTwitter, FiLinkedin, FiGlobe, FiPhone, FiMail, FiEdit2, FiCheck, FiX } from 'react-icons/fi'
+import {
+  FiFacebook,
+  FiInstagram,
+  FiTwitter,
+  FiLinkedin,
+  FiGlobe,
+  FiPhone,
+  FiMail,
+  FiEdit2,
+  FiCheck,
+  FiX,
+} from 'react-icons/fi'
 
-type SocialKey = 'facebook' | 'instagram' | 'twitter' | 'linkedin' | 'website'
+type SocialKey =
+  | 'facebook'
+  | 'instagram'
+  | 'twitter'
+  | 'linkedin'
+  | 'website'
 
 export default function ProfilePage() {
   const { data, isLoading, isError } = useProfile()
@@ -26,7 +46,7 @@ export default function ProfilePage() {
       twitter: '',
       linkedin: '',
       website: '',
-    }
+    },
   })
 
   useEffect(() => {
@@ -41,7 +61,7 @@ export default function ProfilePage() {
           twitter: user.social?.twitter || '',
           linkedin: user.social?.linkedin || '',
           website: user.social?.website || '',
-        }
+        },
       })
     }
   }, [user])
@@ -58,9 +78,11 @@ export default function ProfilePage() {
           twitter: form.social.twitter || undefined,
           linkedin: form.social.linkedin || undefined,
           website: form.social.website || undefined,
-        }
+        },
       },
-      { onSuccess: () => setIsEditing(false) }
+      {
+        onSuccess: () => setIsEditing(false),
+      }
     )
   }
 
@@ -76,13 +98,13 @@ export default function ProfilePage() {
           twitter: user.social?.twitter || '',
           linkedin: user.social?.linkedin || '',
           website: user.social?.website || '',
-        }
+        },
       })
     }
+
     setIsEditing(false)
   }
 
-  // ✅ Fixed renderSocialValue – now returns a proper <a> element
   const renderSocialValue = (val: string | undefined) => {
     if (val) {
       return (
@@ -90,49 +112,95 @@ export default function ProfilePage() {
           href={val}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-primary hover:underline truncate"
+          className="truncate text-body-sm text-primary hover:underline"
         >
           {val}
         </a>
       )
     }
-    return <span className="text-sm text-outline">—</span>
+
+    return <span className="text-body-sm text-outline">—</span>
   }
 
-  if (isLoading) return (
-    <div className="max-w-2xl mx-auto px-gutter py-10 animate-pulse space-y-6">
-      <div className="h-24 w-24 rounded-full bg-outline-variant/30" />
-      <div className="h-6 w-48 rounded bg-outline-variant/30" />
-      <div className="h-4 w-72 rounded bg-outline-variant/30" />
-      <div className="h-4 w-60 rounded bg-outline-variant/30" />
-    </div>
-  )
+  if (isLoading) {
+    return (
+      <main className="mx-auto max-w-2xl px-gutter py-lg">
+        <div className="animate-pulse space-y-md">
+          <div className="h-16 w-16 rounded-full bg-outline-variant/30" />
+          <div className="h-5 w-40 rounded bg-outline-variant/30" />
+          <div className="h-4 w-64 rounded bg-outline-variant/30" />
+          <div className="h-40 rounded-lg bg-outline-variant/20" />
+        </div>
+      </main>
+    )
+  }
 
-  if (isError) return <ErrorState message="Failed to load profile." />
+  if (isError) {
+    return <ErrorState message="Failed to load profile." />
+  }
 
   if (!user) return null
 
-  const socialLinks: { key: SocialKey; icon: React.ElementType; label: string; placeholder: string; color: string }[] = [
-    { key: 'facebook', icon: FiFacebook, label: 'Facebook', placeholder: 'https://facebook.com/yourprofile', color: 'text-blue-600' },
-    { key: 'instagram', icon: FiInstagram, label: 'Instagram', placeholder: 'https://instagram.com/yourhandle', color: 'text-pink-500' },
-    { key: 'twitter', icon: FiTwitter, label: 'Twitter / X', placeholder: 'https://twitter.com/yourhandle', color: 'text-sky-500' },
-    { key: 'linkedin', icon: FiLinkedin, label: 'LinkedIn', placeholder: 'https://linkedin.com/in/yourprofile', color: 'text-blue-700' },
-    { key: 'website', icon: FiGlobe, label: 'Website', placeholder: 'https://yourwebsite.com', color: 'text-primary' },
+  const socialLinks: {
+    key: SocialKey
+    icon: React.ElementType
+    label: string
+    placeholder: string
+    color: string
+  }[] = [
+    {
+      key: 'facebook',
+      icon: FiFacebook,
+      label: 'Facebook',
+      placeholder: 'https://facebook.com/yourprofile',
+      color: 'text-blue-600',
+    },
+    {
+      key: 'instagram',
+      icon: FiInstagram,
+      label: 'Instagram',
+      placeholder: 'https://instagram.com/yourhandle',
+      color: 'text-pink-500',
+    },
+    {
+      key: 'twitter',
+      icon: FiTwitter,
+      label: 'Twitter / X',
+      placeholder: 'https://twitter.com/yourhandle',
+      color: 'text-sky-500',
+    },
+    {
+      key: 'linkedin',
+      icon: FiLinkedin,
+      label: 'LinkedIn',
+      placeholder: 'https://linkedin.com/in/yourprofile',
+      color: 'text-blue-700',
+    },
+    {
+      key: 'website',
+      icon: FiGlobe,
+      label: 'Website',
+      placeholder: 'https://yourwebsite.com',
+      color: 'text-primary',
+    },
   ]
 
   return (
-    <main className="max-w-2xl mx-auto px-gutter py-10 space-y-8">
-
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-5">
+    <main className="mx-auto max-w-2xl px-gutter py-lg">
+      <header className="mb-lg flex items-center justify-between">
+        <div className="flex min-w-0 items-center gap-md">
           <AvatarUpload
             currentUrl={user.avatar?.url}
             name={user.name}
             onUpload={updateAvatar}
           />
-          <div>
-            <h1 className="text-xl font-bold text-on-surface">{user.name || 'No name set'}</h1>
-            <span className="inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
+
+          <div className="min-w-0">
+            <h1 className="truncate text-body-lg font-semibold text-on-surface">
+              {user.name || 'No name set'}
+            </h1>
+
+            <span className="mt-1 inline-flex rounded-full bg-primary/10 px-sm py-0.5 text-caption font-medium capitalize text-primary">
               {user.role}
             </span>
           </div>
@@ -140,130 +208,198 @@ export default function ProfilePage() {
 
         {!isEditing ? (
           <button
+            type="button"
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors"
+            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-outline-variant/60 px-sm text-caption font-medium text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
           >
-            <FiEdit2 size={15} />
+            <FiEdit2 size={13} />
             Edit
           </button>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-xs">
             <button
+              type="button"
               onClick={handleCancel}
-              className="flex items-center gap-1 text-sm text-outline hover:text-on-surface transition-colors"
+              disabled={isSaving}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md px-sm text-caption font-medium text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-50"
             >
-              <FiX size={15} /> Cancel
+              <FiX size={13} />
+              Cancel
             </button>
+
             <button
+              type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-1 text-sm font-semibold text-white bg-primary px-4 py-1.5 rounded-lg hover:opacity-90 disabled:opacity-60 transition-all"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-md text-caption font-medium text-on-primary transition-colors hover:bg-primary-container disabled:opacity-50"
             >
-              <FiCheck size={15} />
+              <FiCheck size={13} />
               {isSaving ? 'Saving...' : 'Save'}
             </button>
           </div>
         )}
-      </div>
+      </header>
 
-      <section className="space-y-4 border border-outline-variant rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wide">Basic Info</h2>
+      <div className="space-y-sm">
+        <section className="rounded-lg border border-outline-variant/50 bg-surface-container-lowest p-md shadow-sm">
+          <h2 className="mb-md text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
+            Basic info
+          </h2>
 
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs text-outline mb-1 block">Name</label>
-            {isEditing ? (
-              <input
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-outline-variant rounded-lg bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                placeholder="Your name"
-              />
-            ) : (
-              <p className="text-sm text-on-surface">{user.name || '—'}</p>
-            )}
-          </div>
+          <div className="grid gap-md sm:grid-cols-2">
+            <div className="min-w-0">
+              <label className="mb-1 block text-caption text-outline">
+                Name
+              </label>
 
-          <div>
-            <label className="text-xs text-outline mb-1 block">Email</label>
-            <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-              <FiMail size={14} />
-              <span>{user.email}</span>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs text-outline mb-1 block">Phone</label>
-            {isEditing ? (
-              <div className="relative">
-                <FiPhone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-outline" />
+              {isEditing ? (
                 <input
-                  value={form.phone}
-                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                  className="w-full pl-8 pr-3 py-2 text-sm border border-outline-variant rounded-lg bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  placeholder="+977 98XXXXXXXX"
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      name: e.target.value,
+                    }))
+                  }
+                  className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface px-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
+                  placeholder="Your name"
                 />
+              ) : (
+                <p className="truncate text-body-sm text-on-surface">
+                  {user.name || '—'}
+                </p>
+              )}
+            </div>
+
+            <div className="min-w-0">
+              <label className="mb-1 block text-caption text-outline">
+                Email
+              </label>
+
+              <div className="flex h-9 items-center gap-2 truncate text-body-sm text-on-surface-variant">
+                <FiMail size={13} className="shrink-0" />
+                <span className="truncate">{user.email}</span>
               </div>
-            ) : (
-              <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-                <FiPhone size={14} />
-                <span>{user.phone || '—'}</span>
-              </div>
-            )}
-          </div>
+            </div>
 
-          <div>
-            <label className="text-xs text-outline mb-1 block">Bio</label>
-            {isEditing ? (
-              <textarea
-                value={form.bio}
-                onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
-                rows={3}
-                className="w-full px-3 py-2 text-sm border border-outline-variant rounded-lg bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
-                placeholder="Tell others a bit about yourself..."
-              />
-            ) : (
-              <p className="text-sm text-on-surface-variant">{user.bio || '—'}</p>
-            )}
-          </div>
-        </div>
-      </section>
+            <div className="min-w-0">
+              <label className="mb-1 block text-caption text-outline">
+                Phone
+              </label>
 
-      <section className="space-y-4 border border-outline-variant rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wide">Social Links</h2>
-
-        <div className="space-y-3">
-          {socialLinks.map(({ key, icon: Icon, label, placeholder, color }) => (
-            <div key={key}>
-              <label className="text-xs text-outline mb-1 block">{label}</label>
               {isEditing ? (
                 <div className="relative">
-                  <Icon size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 ${color}`} />
+                  <FiPhone
+                    size={13}
+                    className="absolute left-sm top-1/2 -translate-y-1/2 text-outline"
+                  />
+
                   <input
-                    value={form.social[key]}
-                    onChange={e => setForm(f => ({ ...f, social: { ...f.social, [key]: e.target.value } }))}
-                    className="w-full pl-8 pr-3 py-2 text-sm border border-outline-variant rounded-lg bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    placeholder={placeholder}
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        phone: e.target.value,
+                      }))
+                    }
+                    className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface pl-8 pr-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
+                    placeholder="+977 98XXXXXXXX"
                   />
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Icon size={14} className={color} />
-                  {renderSocialValue(user.social?.[key])}
+                <div className="flex h-9 items-center gap-2 text-body-sm text-on-surface-variant">
+                  <FiPhone size={13} />
+                  <span>{user.phone || '—'}</span>
                 </div>
               )}
             </div>
-          ))}
-        </div>
-      </section>
 
-<p className="text-xs text-outline text-center">
-  {user.createdAt
-    ? `Member since ${new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
-    : 'RoomFinder Member'
-  }
-</p>
+            <div className="min-w-0 sm:col-span-2">
+              <label className="mb-1 block text-caption text-outline">
+                Bio
+              </label>
 
+              {isEditing ? (
+                <textarea
+                  value={form.bio}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      bio: e.target.value,
+                    }))
+                  }
+                  rows={3}
+                  className="w-full resize-none rounded-md border border-outline-variant/70 bg-surface px-sm py-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
+                  placeholder="Tell others a bit about yourself..."
+                />
+              ) : (
+                <p className="text-body-sm leading-relaxed text-on-surface-variant">
+                  {user.bio || '—'}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-outline-variant/50 bg-surface-container-lowest p-md shadow-sm">
+          <h2 className="mb-md text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
+            Social links
+          </h2>
+
+          <div className="grid gap-md sm:grid-cols-2">
+            {socialLinks.map(
+              ({ key, icon: Icon, label, placeholder, color }) => (
+                <div key={key} className="min-w-0">
+                  <label className="mb-1 block text-caption text-outline">
+                    {label}
+                  </label>
+
+                  {isEditing ? (
+                    <div className="relative">
+                      <Icon
+                        size={13}
+                        className={`absolute left-sm top-1/2 -translate-y-1/2 ${color}`}
+                      />
+
+                      <input
+                        value={form.social[key]}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            social: {
+                              ...f.social,
+                              [key]: e.target.value,
+                            },
+                          }))
+                        }
+                        className="h-9 w-full rounded-md border border-outline-variant/70 bg-surface pl-8 pr-sm text-body-sm text-on-surface outline-none transition-colors focus:border-primary"
+                        placeholder={placeholder}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-9 min-w-0 items-center gap-2">
+                      <Icon size={13} className={color} />
+                      {renderSocialValue(user.social?.[key])}
+                    </div>
+                  )}
+                </div>
+              )
+            )}
+          </div>
+        </section>
+      </div>
+
+      <p className="mt-md text-center text-caption text-outline">
+        {user.createdAt
+          ? `Member since ${new Date(user.createdAt).toLocaleDateString(
+              'en-US',
+              {
+                month: 'long',
+                year: 'numeric',
+              }
+            )}`
+          : 'RoomFinder Member'}
+      </p>
     </main>
   )
 }

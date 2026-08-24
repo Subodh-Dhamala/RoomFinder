@@ -9,11 +9,10 @@ import { useWishlist } from '@/hooks/useWishlist'
 import BookingModal from '@/components/BookingModal'
 import SkeletonGrid from '@/components/SkeletonGrid'
 import ErrorState from '@/components/ErrorState'
-import { FiMapPin, FiHeart } from 'react-icons/fi'
+import { FiHeart, FiImage, FiMapPin } from 'react-icons/fi'
 
 export default function RoomDetailPage() {
   const params = useParams<{ id: string }>()
-  
   const id = params?.id ? decodeURIComponent(params.id).trim() : ''
 
   const { user } = useUser()
@@ -23,10 +22,25 @@ export default function RoomDetailPage() {
   const { isWishlisted, add, remove } = useWishlist(role === 'tenant')
   const [showBooking, setShowBooking] = useState(false)
 
-  if (isLoading) return <main className="p-gutter"><SkeletonGrid /></main>
-  if (isError) return <main className="p-gutter"><ErrorState message="Failed to load room." /></main>
+  if (isLoading) {
+    return (
+      <main className="mx-auto max-w-4xl px-gutter py-lg">
+        <SkeletonGrid />
+      </main>
+    )
+  }
+
+  if (isError) {
+    return (
+      <main className="mx-auto max-w-4xl px-gutter py-lg">
+        <ErrorState message="Failed to load room." />
+      </main>
+    )
+  }
+
   if (!room) return null
 
+  const images = room.images?.filter((image) => Boolean(image?.url)) ?? []
   const wishlisted = isWishlisted(room._id)
 
   const handleWishlist = () => {
@@ -38,74 +52,113 @@ export default function RoomDetailPage() {
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-gutter py-lg">
-
-      {/* Images */}
-      {room.images?.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-sm mb-lg rounded-xl overflow-hidden">
-          {room.images.map((img, i) => (
-            <div key={i} className="relative aspect-4/3 bg-surface-container">
-              <Image
-                src={img.url}
-                alt={`${room.title} image ${i + 1}`}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Title + price */}
-      <div className="flex justify-between items-start mb-sm">
-        <h1 className="text-h2 font-h2 text-on-surface">{room.title}</h1>
-        <div className="text-right shrink-0 ml-4">
-          <span className="text-h3 font-h3 text-primary">
-            Rs. {room.price.toLocaleString()}
-          </span>
-          <span className="text-caption text-on-surface-variant">/month</span>
-        </div>
-      </div>
-
-      {/* Location */}
-      <div className="flex items-center gap-xs text-on-surface-variant text-body-md mb-md">
-        <FiMapPin size={16} />
-        <span>{room.location}</span>
-      </div>
-
-      {/* Description */}
-      {room.description && (
-        <p className="text-body-md text-on-surface-variant leading-relaxed mb-lg">
-          {room.description}
-        </p>
-      )}
-
-      {/* Actions — tenant only */}
-      {role === 'tenant' && (
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowBooking(true)}
-            className="bg-primary text-on-primary px-lg py-md rounded-lg text-label-sm font-label-sm hover:bg-primary-container transition-colors"
-          >
-            Book Now
-          </button>
-          <button
-            onClick={handleWishlist}
-            disabled={add.isPending || remove.isPending}
-            className={`p-3 rounded-lg border transition-colors disabled:opacity-50 ${
-              wishlisted
-                ? 'border-primary text-primary bg-primary/5'
-                : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'
+    <main className="mx-auto max-w-4xl px-gutter py-lg">
+      <section className="overflow-hidden rounded-lg border border-outline-variant/50 bg-surface-container-lowest">
+        {images.length > 0 ? (
+          <div
+            className={`grid gap-1 bg-surface-container ${
+              images.length === 1
+                ? 'grid-cols-1'
+                : 'grid-cols-1 sm:grid-cols-2'
             }`}
-            title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
           >
-            <FiHeart className={wishlisted ? 'fill-primary' : ''} size={18} />
-          </button>
-        </div>
-      )}
+            {images.map((image, index) => (
+              <div
+                key={`${image.url}-${index}`}
+                className="relative aspect-[16/10] overflow-hidden bg-surface-container"
+              >
+                <Image
+                  src={image.url}
+                  alt={`${room.title} image ${index + 1}`}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                  className="object-cover transition-transform duration-300 hover:scale-[1.01]"
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex aspect-[16/7] min-h-52 flex-col items-center justify-center gap-sm text-on-surface-variant">
+            <FiImage size={30} className="text-outline" />
+            <p className="text-body-sm">No images added for this listing</p>
+          </div>
+        )}
+      </section>
 
-      {/* Booking modal */}
+      <section className="mt-lg">
+        <div className="flex items-start justify-between gap-md">
+          <div className="min-w-0">
+            <h1 className="text-h3 font-h3 text-on-surface">
+              {room.title}
+            </h1>
+
+            <div className="mt-1.5 flex items-center gap-1.5 text-body-sm text-on-surface-variant">
+              <FiMapPin size={14} className="shrink-0" />
+              <span className="truncate">{room.location}</span>
+            </div>
+          </div>
+
+          <div className="shrink-0 text-right">
+            <p className="text-body-lg font-semibold text-primary">
+              Rs. {room.price.toLocaleString()}
+            </p>
+            <p className="text-caption text-on-surface-variant">
+              / month
+            </p>
+          </div>
+        </div>
+
+        {room.description && (
+          <div className="mt-md border-t border-outline-variant/40 pt-md">
+            <h2 className="mb-xs text-label-sm font-semibold text-on-surface">
+              About this room
+            </h2>
+
+            <p className="max-w-3xl text-body-sm leading-relaxed text-on-surface-variant">
+              {room.description}
+            </p>
+          </div>
+        )}
+
+        {role === 'tenant' && (
+          <div className="mt-lg flex items-center gap-sm border-t border-outline-variant/40 pt-md">
+            <button
+              type="button"
+              onClick={() => setShowBooking(true)}
+              className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-lg text-label-sm font-label-sm text-on-primary transition-colors hover:bg-primary-container"
+            >
+              Book now
+            </button>
+
+            <button
+              type="button"
+              onClick={handleWishlist}
+              disabled={add.isPending || remove.isPending}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-md border transition-colors disabled:opacity-50 ${
+                wishlisted
+                  ? 'border-primary/40 bg-primary/5 text-primary'
+                  : 'border-outline-variant/60 text-on-surface-variant hover:border-primary hover:text-primary'
+              }`}
+              title={
+                wishlisted
+                  ? 'Remove from wishlist'
+                  : 'Add to wishlist'
+              }
+              aria-label={
+                wishlisted
+                  ? 'Remove from wishlist'
+                  : 'Add to wishlist'
+              }
+            >
+              <FiHeart
+                size={16}
+                className={wishlisted ? 'fill-primary' : ''}
+              />
+            </button>
+          </div>
+        )}
+      </section>
+
       {showBooking && (
         <BookingModal
           listingId={room._id}

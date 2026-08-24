@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import AppError from "../utils/AppError.js";
+import { clerkClient } from "@clerk/clerk-sdk-node";
 
 //patch /api/users/role
 export const updateRole = async (req, res, next) => {
@@ -17,8 +18,12 @@ export const updateRole = async (req, res, next) => {
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { role },
-      { returnDocument: "after" }
+      { new: true }
     ).select("-__v");
+
+    await clerkClient.users.updateUserMetadata(req.auth.userId, {
+      publicMetadata: { role },
+    });
 
     res.json(user);
   } catch (error) {
